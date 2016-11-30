@@ -1,8 +1,15 @@
-package com.kmdev.flix.ui.utils;
+package com.kmdev.flix.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.TextView;
+
+import com.kmdev.flix.R;
 
 /**
  * Created by Kajal on 10/17/2016.
@@ -23,5 +30,21 @@ public class Utils {
                 })
                 .create();
         mAlertDialogReview.show();
+    }
+
+    public static void applyFontForToolbarTitle(Activity context) {
+        Toolbar toolbar = (Toolbar) context.findViewById(R.id.toolbar);
+        for (int i = 0; i < toolbar.getChildCount(); i++) {
+            View view = toolbar.getChildAt(i);
+            if (view instanceof TextView) {
+                TextView tv = (TextView) view;
+                Typeface titleFont = Typeface.
+                        createFromAsset(context.getAssets(), "fonts/Montserrat-Bold.ttf");
+                if (tv.getText().equals(context.getTitle())) {
+                    tv.setTypeface(titleFont);
+                    break;
+                }
+            }
+        }
     }
 }

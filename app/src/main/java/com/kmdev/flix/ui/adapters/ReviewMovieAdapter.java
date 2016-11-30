@@ -30,6 +30,7 @@ public class ReviewMovieAdapter extends RecyclerView.Adapter<ReviewMovieAdapter.
         return mViewHolder;
     }
 
+
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
        /* Picasso.with(holder.itemView.getContext())

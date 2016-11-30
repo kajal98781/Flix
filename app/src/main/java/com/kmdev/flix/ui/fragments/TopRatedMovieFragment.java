@@ -17,14 +17,15 @@ import com.brsoftech.core_utils.base.BaseSupportFragment;
 import com.brsoftech.core_utils.utils.ItemClickSupport;
 import com.google.gson.Gson;
 import com.kmdev.flix.R;
+import com.kmdev.flix.RestClient.ApiHitListener;
+import com.kmdev.flix.RestClient.ApiIds;
+import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseTopRated;
-import com.kmdev.flix.ui.RestClient.ApiHitListener;
-import com.kmdev.flix.ui.RestClient.ApiIds;
-import com.kmdev.flix.ui.RestClient.RestClient;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
 import com.kmdev.flix.ui.adapters.TopRatedMovieAdapter;
-import com.kmdev.flix.ui.utils.Constants;
+import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.ItemOffsetDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +86,7 @@ public class TopRatedMovieFragment extends BaseSupportFragment implements ApiHit
 
     private void bindViewsById(View view) {
         mTopRatedRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerview_to_rated);
+
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         mTvLoading = (TextView) view.findViewById(R.id.tv_loading);
@@ -96,6 +98,9 @@ public class TopRatedMovieFragment extends BaseSupportFragment implements ApiHit
         mTopRatedRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mTopRatedMovieAdapter = new TopRatedMovieAdapter(mTopRatedBeanList);
         mTopRatedRecyclerView.setAdapter(mTopRatedMovieAdapter);
+        ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
+        mTopRatedRecyclerView.addItemDecoration(itemDecoration);
+
         //set top rated click  listener
         ItemClickSupport.addTo(mTopRatedRecyclerView)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {

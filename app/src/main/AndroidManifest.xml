@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".ui.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -14,9 +15,7 @@
         <activity android:name=".MainActivity" />
         <activity
             android:name=".ui.activities.HomeActivity"
-            android:theme="@style/AppTheme_Pre1">
-
-        </activity>
+            android:theme="@style/AppTheme_Pre1"></activity>
         <activity
             android:name=".ui.activities.MovieDetailsActivity"
             android:theme="@style/AppTheme_Pre1" />
@@ -35,6 +34,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.activities.SearchMovieActivity"
+            android:theme="@style/AppTheme_Grey"></activity>
     </application>
 
 </manifest>

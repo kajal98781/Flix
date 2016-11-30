@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.RestClient;
+package com.kmdev.flix.RestClient;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

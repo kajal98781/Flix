@@ -17,8 +17,9 @@ import com.kmdev.flix.R;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
 import com.kmdev.flix.ui.adapters.FavouriteMovieAdapter;
-import com.kmdev.flix.ui.utils.Constants;
-import com.kmdev.flix.ui.utils.DataBaseHelper;
+import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.DataBaseHelper;
+import com.kmdev.flix.utils.ItemOffsetDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,8 @@ public class FavouriteMovieFragment extends BaseSupportFragment implements View.
         //set favourite adapter to recycler
         mRecyclerViewFav.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mRecyclerViewFav.setAdapter(mFavouriteMovieAdapter);
+        ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
+        mRecyclerViewFav.addItemDecoration(itemDecoration);
 
         //initialize database & get movies
         mDataBase = new DataBaseHelper(getActivity());
@@ -96,15 +99,13 @@ public class FavouriteMovieFragment extends BaseSupportFragment implements View.
             movieDetailIntent.putExtra(Constants.TYPE_IS_FAVOURITE, true);
             startActivity(movieDetailIntent);
         }
-
     }
 
     private void bindViewsById(View view) {
         mRecyclerViewFav = (RecyclerView) view.findViewById(R.id.reccycler_fav);
+
         mTvNoFavAvail = (TextView) view.findViewById(R.id.tv_no_fav_available);
         mTvNoInternet = (TextView) view.findViewById(R.id.tv_no_internet_available);
-
-
     }
 
 

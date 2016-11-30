@@ -10,8 +10,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kmdev.flix.R;
+import com.kmdev.flix.RestClient.ApiUrls;
 import com.kmdev.flix.models.ResponseTopRated;
-import com.kmdev.flix.ui.RestClient.ApiUrls;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;

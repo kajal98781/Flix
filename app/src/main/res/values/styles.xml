@@ -27,11 +27,53 @@
         </item>
 
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <!--
                 <item name="android:itemBackground">@color/colorAccent</item>
         -->
     </style>
 
+
+    <style name="TextAppearance.FontPath.BOLD" parent="android:TextAppearance">
+        <!-- Custom Attr-->
+        <item name="fontPath">fonts/Montserrat-Bold.ttf</item>
+
+    </style>
+
+    <style name="TextAppearance.FontPath.BOLD.TITLE" parent="android:TextAppearance">
+        <!-- Custom Attr-->
+        <item name="fontPath">fonts/Montserrat-Bold.ttf</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+
+    </style>
+
+    <style name="TextAppearance.FontPath.REGULAR" parent="android:TextAppearance">
+        <!-- Custom Attr-->
+        <item name="fontPath">fonts/Montserrat-Regular.ttf</item>
+    </style>
+
+
+    <style name="AppTheme_Grey" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowContentTransitions" tools:targetApi="lollipop">true</item>
+        <!-- enable overlap of transitions -->
+        <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="lollipop">true
+        </item>
+        <item name="android:windowAllowReturnTransitionOverlap" tools:targetApi="lollipop">true
+        </item>
+
+        <item name="colorPrimary">@color/colorPrimary1</item>
+        <item name="colorPrimaryDark">@color/colorPrimary1</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorSecondary">@color/black</item>
+
+        <!--
+                <item name="android:itemBackground">@color/colorAccent</item>
+        -->
+    </style>
+
+
+    <color name="colorPrimary1">#f1eeee</color>
 </resources>

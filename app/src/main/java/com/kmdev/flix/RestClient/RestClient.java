@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.RestClient;
+package com.kmdev.flix.RestClient;
 
 import android.content.Context;
 
@@ -6,10 +6,11 @@ import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
 import com.kmdev.flix.models.ResponsePopularMovie;
+import com.kmdev.flix.models.ResponseSearchMovie;
 import com.kmdev.flix.models.ResponseTopRated;
-import com.kmdev.flix.ui.retrofilt.Rest;
-import com.kmdev.flix.ui.retrofilt.RestService;
-import com.kmdev.flix.ui.utils.Constants;
+import com.kmdev.flix.retrofilt.Rest;
+import com.kmdev.flix.retrofilt.RestService;
+import com.kmdev.flix.utils.Constants;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -132,6 +133,25 @@ public class RestClient extends BaseRestClient {
                 @Override
                 public void onFailure(Call<ResponseMovieVideo> call, Throwable t) {
                     apiHitListener.onFailResponse(ApiIds.ID_MOVIE_VIDEO, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void searchMovie(String query) {
+        if (ConnectionDetector.isConnectingToInternet(_context)) {
+            Call<ResponseSearchMovie> call = getApi().searchMovie(Constants.API_KEY, "en-US", query);
+            call.enqueue(new Callback<ResponseSearchMovie>() {
+                @Override
+                public void onResponse(Call<ResponseSearchMovie> call, Response<ResponseSearchMovie> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_SEARCH_MOVIE, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseSearchMovie> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_SEARCH_MOVIE, t.getMessage());
                 }
             });
         } else {

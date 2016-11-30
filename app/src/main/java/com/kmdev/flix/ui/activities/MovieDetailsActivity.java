@@ -1,5 +1,6 @@
 package com.kmdev.flix.ui.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,22 +22,25 @@ import com.brsoftech.core_utils.base.BaseAppCompatActivity;
 import com.brsoftech.core_utils.utils.ItemClickSupport;
 import com.google.gson.Gson;
 import com.kmdev.flix.R;
+import com.kmdev.flix.RestClient.ApiHitListener;
+import com.kmdev.flix.RestClient.ApiIds;
+import com.kmdev.flix.RestClient.ApiUrls;
+import com.kmdev.flix.RestClient.RestClient;
+import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
-import com.kmdev.flix.ui.RestClient.ApiHitListener;
-import com.kmdev.flix.ui.RestClient.ApiIds;
-import com.kmdev.flix.ui.RestClient.ApiUrls;
-import com.kmdev.flix.ui.RestClient.RestClient;
 import com.kmdev.flix.ui.adapters.ReviewMovieAdapter;
 import com.kmdev.flix.ui.adapters.VideoMovieAdapter;
-import com.kmdev.flix.ui.utils.Constants;
-import com.kmdev.flix.ui.utils.DataBaseHelper;
-import com.kmdev.flix.ui.utils.Utils;
+import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.DataBaseHelper;
+import com.kmdev.flix.utils.Utils;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHitListener, View.OnClickListener {
     ResponseMovieDetails mResponseMovieDetails;
@@ -61,6 +65,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private String mTitle;
     private ResponseMovieReview mResponseMovieReview;
     private ResponseMovieVideo mResponseMovieVideo;
+    private boolean mIsLoadingReview = false;
+    private boolean mIsLoadingTrailers = false;
 
 
     @Override
@@ -72,6 +78,12 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
 
     }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
 
     private void bindViewsById() {
         mRestClient = new RestClient(MovieDetailsActivity.this);
@@ -101,11 +113,14 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mImageMovieBack.setOnClickListener(this);
         mFabFavourite.setOnClickListener(this);
         setSupportActionBar(mToolbar);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         //hide  title from toolbar
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         //get parcelable data
         String movieDetails = getIntent().getStringExtra(Constants.TYPE_MOVIE_DETAILS);
+        boolean isComeFromFavourites = getIntent().getBooleanExtra(Constants.TYPE_IS_FAVOURITE, false);
 
         //set review adapter
         mRecyclerViewReview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -126,21 +141,21 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 //   mToolbar.setTitle(mResponseMovieDetails.getTitle());
                 mImageUrl = mResponseMovieDetails.getPoster_path();
                 Picasso.with(this)
-                        .load(ApiUrls.IMAGE_PATH_ULTRA + mResponseMovieDetails.getPoster_path())
+                        .load(ApiUrls.IMAGE_PATH_ULTRA + mResponseMovieDetails.getBackdrop_path())
                         .placeholder(R.mipmap.ic_launcher)   // optional
                         .error(R.mipmap.ic_launcher)
                         .into(mImageMovieBack);
                 mTvMovieTitle.setText(mResponseMovieDetails.getOriginal_title());
                 mTvReleaseDate.setText(mResponseMovieDetails.getRelease_date());
 
-                if (!TextUtils.isEmpty(mMovieId)) {
+               /* if (!TextUtils.isEmpty(mMovieId)) {
                     mProgressBarReview.setVisibility(View.VISIBLE);
                     mTvLoadReview.setVisibility(View.VISIBLE);
                     mRestClient.callback(this).getReviews(mMovieId);
                     mProgressBarVideo.setVisibility(View.VISIBLE);
                     mTvLoadingVideo.setVisibility(View.VISIBLE);
                     mRestClient.callback(this).getVideos(mMovieId);
-                }
+                }*/
             }
 
         }
@@ -178,6 +193,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 }
                 if (scrollRange + verticalOffset == 0) {
                     getSupportActionBar().setDisplayShowTitleEnabled(true);
+                    Utils.applyFontForToolbarTitle(MovieDetailsActivity.this);
+
                     getSupportActionBar().setTitle(mTitle);
                     isShow = true;
                 } else if (isShow) {
@@ -187,14 +204,51 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 }
             }
         });
-      /*  //get reviews from database
-        ResponseMovieReview responseMovieReview=mDatabase.getMovieReview(Integer.parseInt(mMovieId));
-       List<ResponseMovieReview.ReviewBean> reviewBeanList= responseMovieReview.getReviewBean();
+        //get reviews from database
+        if (isComeFromFavourites) {
+            DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mMovieId));
+            ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
+            if (responseMovieReview != null) {
+                List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
+                if (reviewBeanList.size() > 0) {
+                    mReviewBeanList.clear();
+                    mReviewBeanList.addAll(reviewBeanList);
+                    if (mReviewAdapter != null) {
+                        mReviewAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    mTvReviews.setVisibility(View.VISIBLE);
+                    mRecyclerViewReview.setVisibility(View.GONE);
+                }
+            }
 
-        //get videos from database
-        ResponseMovieVideo responseMovieVideo=  mDatabase.getMovieVideos(Integer.parseInt(mMovieId));
-            List<ResponseMovieVideo.VideoBean> videoBeanList=responseMovieVideo.getVideoBean();
-*/
+            //get videos from database
+            ResponseMovieVideo responseMovieVideo = dataBaseMovieDetails.getResponseMovieVideo();
+            if (responseMovieVideo != null) {
+                List<ResponseMovieVideo.VideoBean> videoBeanList = responseMovieVideo.getVideoBean();
+                if (videoBeanList.size() > 0) {
+                    mVideoBeanList.clear();
+                    mVideoBeanList.addAll(videoBeanList);
+                    if (mVideoMovieAdapter != null) {
+                        mVideoMovieAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    mTvVideos.setVisibility(View.VISIBLE);
+                    mRecyclerViewVideos.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            if (!TextUtils.isEmpty(mMovieId)) {
+                mIsLoadingReview = true;
+                mIsLoadingTrailers = true;
+                mProgressBarReview.setVisibility(View.VISIBLE);
+                mTvLoadReview.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getReviews(mMovieId);
+                mProgressBarVideo.setVisibility(View.VISIBLE);
+                mTvLoadingVideo.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getVideos(mMovieId);
+            }
+        }
 
 
     }
@@ -215,6 +269,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     @Override
     public void onSuccessResponse(int apiId, Object response) {
         if (apiId == ApiIds.ID_MOVIE_REVIEW) {
+            mIsLoadingReview = false;
             mProgressBarReview.setVisibility(View.GONE);
             mTvLoadReview.setVisibility(View.GONE);
             mResponseMovieReview = (ResponseMovieReview) response;
@@ -232,6 +287,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 }
             }
         } else if (apiId == ApiIds.ID_MOVIE_VIDEO) {
+            mIsLoadingTrailers = false;
             mProgressBarVideo.setVisibility(View.GONE);
             mTvLoadingVideo.setVisibility(View.GONE);
             mResponseMovieVideo = (ResponseMovieVideo) response;
@@ -270,17 +326,20 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab_favorite:
-                if (mIsFavorite) {
-                    addToFavourites();
-                    mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
-                    mIsFavorite = false;
-                    displayShortToast(R.string.add_to_favourites);
+                if (!mIsLoadingReview && !mIsLoadingTrailers) {
+                    if (mIsFavorite) {
+                        addToFavourites();
+                        mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
+                        mIsFavorite = false;
+                        displayShortToast(R.string.add_to_favourites);
+                    } else {
+                        mFabFavourite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                        displayShortToast(R.string.remove_to_favourites);
+                        removeFromFavourites();
+                        mIsFavorite = true;
+                    }
                 } else {
-                    mFabFavourite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-                    displayShortToast(R.string.remove_to_favourites);
-                    removeFromFavourites();
-                    mIsFavorite = true;
-
+                    displayShortToast(R.string.wait_data_loaded);
                 }
                 break;
             case R.id.imageMovieBack:
@@ -322,7 +381,13 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
     private void addToFavourites() {
 
-        mDatabase.addMovies(mResponseMovieDetails);
+        DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
+        dataBaseMovieDetails.setResponseMovieDetails(mResponseMovieDetails);
+        dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
+        dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
+        dataBaseMovieDetails.setMovieId(mResponseMovieDetails.getId());
+        mDatabase.addMovies(dataBaseMovieDetails);
+
 
         //  Toast.makeText(MovieDetailsActivity.this, "save data", Toast.LENGTH_SHORT).show();
 

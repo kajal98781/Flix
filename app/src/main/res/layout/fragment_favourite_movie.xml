@@ -11,13 +11,14 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/reccycler_fav"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="@dimen/spacing" />
     <!--
         </android.support.v4.widget.SwipeRefreshLayout>
     -->
     <FrameLayout
         android:layout_width="match_parent"
-
         android:layout_height="match_parent">
 
         <TextView
@@ -29,6 +30,7 @@
             android:drawablePadding="@dimen/dp_10"
             android:gravity="center"
             android:text="@string/no_favourites"
+            android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
             android:textColor="@color/black"
             android:textSize="@dimen/text_size_medium"
             android:visibility="gone" />
@@ -42,6 +44,7 @@
             android:drawablePadding="@dimen/dp_10"
             android:gravity="center"
             android:text="@string/internet_connection"
+            android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
             android:textColor="@color/black"
             android:textSize="@dimen/text_size_medium"
             android:visibility="gone" />

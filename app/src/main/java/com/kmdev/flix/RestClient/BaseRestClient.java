@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.RestClient;
+package com.kmdev.flix.RestClient;
 
 import android.app.ProgressDialog;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.utils;
+package com.kmdev.flix.utils;
 
 import android.support.design.widget.AppBarLayout;
 

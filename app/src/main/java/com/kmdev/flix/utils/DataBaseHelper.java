@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.utils;
+package com.kmdev.flix.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.google.gson.Gson;
+import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
@@ -16,7 +17,7 @@ import java.util.List;
 
 
 public class DataBaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "favouriteManager";
     private static final String TABLE_FAVOURITES = "myFavourites";
     private static final String KEY_FAVOURITE = "favourite";
@@ -26,19 +27,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public DataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        //3rd argument to be passed is CursorFactory instance
     }
 
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
-/*
-        String CREATE_MESSAGE_TABLE = "CREATE TABLE " + TABLE_FAVOURITES + "(" + KEY_FAVOURITE + " TEXT" + ")";
-*/
+        String CREATE_TABLE_MOVIE = "CREATE TABLE " + TABLE_FAVOURITES + "("
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_FAVOURITE + " TEXT,"
+                + KEY_REVIEW + " TEXT," + KEY_VIDEO + " TEXT" + ")";
 
-        String CREATE_TABLE_MOVIE = "CREATE TABLE " + TABLE_FAVOURITES + "(" + KEY_ID +
-                " INTEGER PRIMARY KEY," + KEY_FAVOURITE + " TEXT" + KEY_REVIEW + "TEXT" + KEY_VIDEO +
-                "TEXT" + ")";
+
 
         db.execSQL(CREATE_TABLE_MOVIE);
     }
@@ -54,35 +52,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     // code to add the new message
-    public void addMovies(ResponseMovieDetails movieDetails) {
+    public void addMovies(DataBaseMovieDetails dataBaseMovieDetails) {
         SQLiteDatabase db = this.getWritableDatabase();
-
         ContentValues values = new ContentValues();
-        values.put(KEY_ID, movieDetails.getId());
-        values.put(KEY_FAVOURITE, new Gson().toJson(movieDetails)); // Contact Name
-        // values.put(KEY_REVIEW, new Gson().toJson(reviewDetails));
-        // values.put(KEY_VIDEO, new Gson().toJson(videoDetails));
+        values.put(KEY_ID, dataBaseMovieDetails.getMovieId());
+        values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseMovieDetails())); // Contact Name
+        values.put(KEY_REVIEW, new Gson().toJson(dataBaseMovieDetails.getResponseMovieReview()));
+        values.put(KEY_VIDEO, new Gson().toJson(dataBaseMovieDetails.getResponseMovieVideo()));
         // Inserting Row
         db.insert(TABLE_FAVOURITES, null, values);
         //2nd argument is String containing nullColumnHack
         db.close(); // Closing database connection
     }
 
-    // code to get the single contact
-/*    MessageModel getMessage(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_MESSAGE, new String[] { KEY_ID,
-                        KEY_MESSAGE }, KEY_ID + "=?",
-                new String[] { String.valueOf(id) }, null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        MessageModel contact = new MessageModel(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1));
-        // return contact
-        return contact;
-    }*/
 
 
     // code to get all contacts in a list view
@@ -108,57 +91,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return movieList;
     }
 
-    //code to get single movie details
-    public ResponseMovieDetails getMovieDetails(int id) {
-
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID}, KEY_ID + "=?",
-                new String[]{String.valueOf(id)}, null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        ResponseMovieDetails responseMovieDetails = new ResponseMovieDetails(Integer.parseInt(cursor.getString(0)));
-        // return contact
-        return responseMovieDetails;
-    }
-
-   /* // code to update the single contact
-    public int updateContact(ResponseMovieDetails messageModel) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(KEY_MESSAGE, messageModel.getMessage());
-
-        // updating row
-        return db.update(TABLE_MESSAGE, values, KEY_MESSAGE + " = ?",
-                new String[]{String.valueOf(messageModel.getMessage())});
-    }
-
-    // Deleting single contact
-    public void deleteContact(MessageModel messageModel) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_MESSAGE, KEY_MESSAGE + " = ?",
-                new String[]{String.valueOf(messageModel.getMessage())});
-   db.delete("tablename","id=? and name=?",new String[]{"1","jack"});
-
-        this is like useing this command:
-
-        delete from tablename where id='1' and name ='jack'
-
-        db.close();
-    }*/
-
-    // Getting contacts Count
-    public int getContactsCount() {
-        String countQuery = "SELECT  * FROM " + TABLE_FAVOURITES;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(countQuery, null);
-        cursor.close();
-
-        // return count
-        return cursor.getCount();
-    }
 
     public void deleteAll() {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -184,37 +116,39 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
         String sql = "SELECT * FROM " + TABLE_FAVOURITES + " WHERE " + KEY_ID + "=" + movieId;
         cursor = db.rawQuery(sql, null);
-/*
-        Log("Cursor Count : " + cursor.getCount());
-*/
-
-        //PID Not Found
         return cursor.getCount() > 0;
     }
 
-
-    public ResponseMovieReview getMovieReview(int id) {
+    public DataBaseMovieDetails getMovieDetails(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID}, KEY_ID + "=?",
+        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID, KEY_FAVOURITE, KEY_REVIEW,
+                        KEY_VIDEO}, KEY_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
+        DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
+        dataBaseMovieDetails.setMovieId(id);
+        dataBaseMovieDetails.setResponseMovieReview(new Gson().fromJson(cursor.getString(2), ResponseMovieReview.class));
+        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseMovieVideo.class));
+        dataBaseMovieDetails.setResponseMovieDetails(new Gson().fromJson(cursor.getString(1), ResponseMovieDetails.class));
 
-        ResponseMovieReview responseMovieDetails = new ResponseMovieReview(Integer.parseInt(cursor.getString(2)));
         // return contact
-        return responseMovieDetails;
+        return dataBaseMovieDetails;
     }
 
-    public ResponseMovieVideo getMovieVideos(int id) {
+    public DataBaseMovieDetails getMovieVideo(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID}, KEY_ID + "=?",
+        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID, KEY_FAVOURITE, KEY_REVIEW, KEY_VIDEO},
+                KEY_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
-        ResponseMovieVideo responseMovieDetails = new ResponseMovieVideo(Integer.parseInt(cursor.getString(3)));
+        DataBaseMovieDetails responseMovieDetails = new DataBaseMovieDetails();
+        responseMovieDetails.setMovieId(id);
+        responseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseMovieVideo.class));
+        responseMovieDetails.setResponseMovieDetails(new Gson().fromJson(cursor.getString(1), ResponseMovieDetails.class));
         // return contact
         return responseMovieDetails;
     }

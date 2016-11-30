@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Kajal on 10/2/2016.
@@ -12,10 +13,12 @@ import java.util.ArrayList;
 
 public class HomeAdapter extends FragmentStatePagerAdapter {
     ArrayList<Fragment> fragments = new ArrayList<>();
+    List<String> fragmentTitleList = new ArrayList<>();
 
-    public HomeAdapter(FragmentManager fm, ArrayList<Fragment> fragments) {
+    public HomeAdapter(FragmentManager fm, ArrayList<Fragment> fragments, List<String> titleList) {
         super(fm);
         this.fragments = fragments;
+        fragmentTitleList = titleList;
 
 
     }
@@ -36,5 +39,10 @@ public class HomeAdapter extends FragmentStatePagerAdapter {
     public void addFragment(Fragment f) {
         fragments.add(f);
 
+    }
+
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return fragmentTitleList.get(position);
     }
 }

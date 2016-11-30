@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.retrofilt;
+package com.kmdev.flix.retrofilt;
 
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 
@@ -17,7 +17,7 @@ public class RestService {
     private static long CONNECTION_TIMEOUT = 600;
 
     // private static String API_URL = "http://192.168.1.253:81/";
-    private static String API_URL = "https://api.themoviedb.org/3/movie/";
+    private static String API_URL = "https://api.themoviedb.org/3/";
 
 
     public static Rest getService() {

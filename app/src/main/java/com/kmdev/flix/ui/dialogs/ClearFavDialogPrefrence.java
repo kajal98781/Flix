@@ -7,7 +7,7 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
 import com.kmdev.flix.R;
-import com.kmdev.flix.ui.utils.DataBaseHelper;
+import com.kmdev.flix.utils.DataBaseHelper;
 
 /**
  * Created by Kajal on 10/30/2016.

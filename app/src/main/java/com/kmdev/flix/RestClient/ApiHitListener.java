@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.RestClient;
+package com.kmdev.flix.RestClient;
 
 /**
  * Created by ubuntu on 1/8/16.

@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.RestClient;
+package com.kmdev.flix.RestClient;
 
 /**
  * Created by ubuntu on 1/8/16.
@@ -9,6 +9,7 @@ public class ApiIds {
     public static final int ID_MOVIE_REVIEW = 4;
     public static final int ID_MOVIE_VIDEO = 5;
     public static final int ID_FAVOURITE = 6;
+    public static final int ID_SEARCH_MOVIE = 7;
     public static int ID_TOP_RATED_MOVIES = 2;
 
 

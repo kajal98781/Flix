@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.utils;
+package com.kmdev.flix.utils;
 
 /**
  * Created by Kajal on 10/9/2016.

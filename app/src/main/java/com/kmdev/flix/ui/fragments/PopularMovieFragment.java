@@ -17,14 +17,15 @@ import com.brsoftech.core_utils.base.BaseSupportFragment;
 import com.brsoftech.core_utils.utils.ItemClickSupport;
 import com.google.gson.Gson;
 import com.kmdev.flix.R;
+import com.kmdev.flix.RestClient.ApiHitListener;
+import com.kmdev.flix.RestClient.ApiIds;
+import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponsePopularMovie;
-import com.kmdev.flix.ui.RestClient.ApiHitListener;
-import com.kmdev.flix.ui.RestClient.ApiIds;
-import com.kmdev.flix.ui.RestClient.RestClient;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
 import com.kmdev.flix.ui.adapters.PopularMovieAdapter;
-import com.kmdev.flix.ui.utils.Constants;
+import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.ItemOffsetDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,7 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
 
     private void bindViewsById(View view) {
         mRecyclerPopularMovie = (RecyclerView) view.findViewById(R.id.recyclerview_popular);
+
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         //mProgressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
@@ -74,6 +76,8 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
     private void init() {
         mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerPopularMovie.setLayoutManager(mStaggeredGridLayoutManager);
+        ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
+        mRecyclerPopularMovie.addItemDecoration(itemDecoration);
         mPopularMovieAdapter = new PopularMovieAdapter(mPopularMovieList);
         mRecyclerPopularMovie.setAdapter(mPopularMovieAdapter);
         ItemClickSupport

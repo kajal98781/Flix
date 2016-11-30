@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:text="@string/description"
+            android:textAppearance="@style/TextAppearance.FontPath.BOLD"
             android:textColor="@color/black"
             android:textSize="@dimen/dp_16dp" />
 
@@ -27,6 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/text_margin"
             android:layout_marginLeft="@dimen/text_margin"
+            android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
             android:textSize="@dimen/dp_12" />
 
         <TextView
@@ -34,6 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:text="@string/reviews"
+            android:textAppearance="@style/TextAppearance.FontPath.BOLD"
             android:textColor="@color/black"
             android:textSize="@dimen/dp_16dp" />
 
@@ -60,6 +63,8 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="@dimen/dp_4dp"
                     android:text="@string/loading_wait"
+
+                    android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
                     android:textColor="@color/black"
                     android:visibility="gone" />
             </LinearLayout>
@@ -77,6 +82,8 @@
                 android:layout_marginBottom="@dimen/text_margin"
                 android:layout_marginLeft="@dimen/text_margin"
                 android:text="@string/no_reviews_available"
+
+                android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
                 android:textSize="@dimen/dp_15"
                 android:visibility="gone" />
         </FrameLayout>
@@ -86,6 +93,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:text="@string/videos"
+            android:textAppearance="@style/TextAppearance.FontPath.BOLD"
+
             android:textColor="@color/black"
             android:textSize="@dimen/dp_16dp" />
 
@@ -115,6 +124,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/loading_wait"
+                        android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
                         android:textColor="@color/black"
                         android:textSize="@dimen/dp_15"
                         android:visibility="gone" />
@@ -135,7 +145,9 @@
                 android:layout_marginBottom="@dimen/text_margin"
                 android:layout_marginLeft="@dimen/text_margin"
                 android:text="@string/no_video_available"
+                android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
                 android:textSize="@dimen/dp_15"
+
                 android:visibility="gone" />
         </FrameLayout>
     </LinearLayout>

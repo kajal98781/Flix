@@ -1,4 +1,4 @@
-package com.kmdev.flix.ui.utils;
+package com.kmdev.flix.utils;
 
 /**
  * Created by Kajal on 10/21/2016.
@@ -11,4 +11,5 @@ public class BaseArguments {
     public static final String ARG_PAGE = "page";
     public static final String ARG_MOVIE_ID = "movie_id";
     public static final String ARG_APPEND_RESPONSE = "append_to_response";
+    public static final String ARG_QUERY = "query";
 }

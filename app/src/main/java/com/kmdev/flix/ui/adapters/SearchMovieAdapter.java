@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiUrls;
-import com.kmdev.flix.models.ResponseMovieDetails;
+import com.kmdev.flix.models.ResponseSearchMovie;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -18,14 +18,14 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by Kajal on 10/23/2016.
+ * Created by Kajal on 11/26/2016.
  */
-public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAdapter.ViewHolder> {
+public class SearchMovieAdapter extends RecyclerView.Adapter<SearchMovieAdapter.ViewHolder> {
     private ViewHolder mViewHolder;
-    private List<ResponseMovieDetails> mMovieDetailsList;
+    private List<ResponseSearchMovie.ResultsSearchBean> mSearchMovieList;
 
-    public FavouriteMovieAdapter(List<ResponseMovieDetails> movieDetailsList) {
-        mMovieDetailsList = movieDetailsList;
+    public SearchMovieAdapter(List<ResponseSearchMovie.ResultsSearchBean> searchMovieDetailsList) {
+        mSearchMovieList = searchMovieDetailsList;
     }
 
     @Override
@@ -39,15 +39,15 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
-                .load(ApiUrls.IMAGE_PATH_ULTRA + mMovieDetailsList.get(position).getPoster_path())
+                .load(ApiUrls.IMAGE_PATH_ULTRA + mSearchMovieList.get(position).getBackdrop_path())
                 .placeholder(R.mipmap.ic_launcher)   // optional
                 .error(R.mipmap.ic_launcher)      // optional
                 .into(holder.imageView);
-        holder.tvTitle.setText(mMovieDetailsList.get(position).getOriginal_title());
+        holder.tvTitle.setText(mSearchMovieList.get(position).getOriginal_title());
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
         try {
-            Date date = simpleDateFormat1.parse(mMovieDetailsList.get(position).getRelease_date());
+            Date date = simpleDateFormat1.parse(mSearchMovieList.get(position).getRelease_date());
             String releaseDate = simpleDateFormat.format(date);
             Date formattedDate = simpleDateFormat.parse(releaseDate);
             holder.tvReleaseDate.setText(simpleDateFormat.format(formattedDate));
@@ -59,7 +59,7 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
 
     @Override
     public int getItemCount() {
-        return mMovieDetailsList.size();
+        return mSearchMovieList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

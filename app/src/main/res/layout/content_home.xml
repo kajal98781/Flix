@@ -23,7 +23,8 @@
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:tabIndicatorColor="@color/color_white" />
+            app:tabIndicatorColor="@color/color_white"
+            app:tabTextAppearance="@style/TextAppearance.FontPath.BOLD" />
 
         <android.support.v4.view.ViewPager
             android:id="@+id/pager"

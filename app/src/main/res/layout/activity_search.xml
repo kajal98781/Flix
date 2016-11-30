@@ -20,11 +20,27 @@
             android:background="?attr/colorPrimary"
             app:elevation="0dp"
             app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:titleTextAppearance="@style/TextAppearance.FontPath.BOLD.TITLE" />
+            app:theme="@style/AppTheme_Grey">
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#00ffffff"
+                android:hint="@string/search"
+                android:textColor="@color/black"
+                android:textColorHint="@color/dark_grey" />
+        </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_home" />
+    <include layout="@layout/content_search" />
 
 
 </android.support.design.widget.CoordinatorLayout>
+
+
+
+
+
+
