@@ -1,5 +1,6 @@
 package com.kmdev.flix.ui.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -26,9 +27,12 @@ import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseSearchMovie;
 import com.kmdev.flix.ui.adapters.SearchMovieAdapter;
 import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.ItemOffsetDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHitListener {
     private RestClient mRestClient;
@@ -68,6 +72,8 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mSearchMovieAdapter = new SearchMovieAdapter(mSearchBeanList);
         mRecyclerSearch.setAdapter(mSearchMovieAdapter);
+        ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(this, R.dimen.spacing);
+        mRecyclerSearch.addItemDecoration(itemDecoration);
         mEtSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -183,6 +189,11 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     public void networkNotAvailable() {
 
 
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
 }

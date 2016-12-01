@@ -72,8 +72,8 @@ public class TopRatedMovieAdapter extends RecyclerView.Adapter<RecyclerView.View
     private void configureItemViewHolder(ItemViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
                 .load(ApiUrls.IMAGE_PATH_ULTRA + mTopRatedBeanList.get(position).getPoster_path())
-                .placeholder(R.color.grey)   // optional
-                .error(R.mipmap.ic_launcher)      // optional
+                .placeholder(R.color.photo_placeholder)   // optional
+                .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
         holder.tvTitle.setText(mTopRatedBeanList.get(position).getOriginal_title());
         holder.tvReleaseDate.setText(mTopRatedBeanList.get(position).getRelease_date());

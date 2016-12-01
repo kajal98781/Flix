@@ -67,8 +67,8 @@ public class PopularMovieAdapter extends RecyclerView.Adapter<ViewHolder> {
     private void configureItemViewHolder(ItemViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
                 .load(ApiUrls.IMAGE_PATH_ULTRA + mPopularMovieList.get(position).getPoster_path())
-                .placeholder(R.color.grey)   // optional
-                .error(R.mipmap.ic_launcher)      // optional
+                .placeholder(R.color.photo_placeholder)   // optional
+                .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
         holder.tvTitle.setText(mPopularMovieList.get(position).getOriginal_title());
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");

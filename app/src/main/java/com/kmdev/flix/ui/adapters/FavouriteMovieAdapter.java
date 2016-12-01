@@ -40,8 +40,8 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
                 .load(ApiUrls.IMAGE_PATH_ULTRA + mMovieDetailsList.get(position).getPoster_path())
-                .placeholder(R.mipmap.ic_launcher)   // optional
-                .error(R.mipmap.ic_launcher)      // optional
+                .placeholder(R.color.photo_placeholder)   // optional
+                .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
         holder.tvTitle.setText(mMovieDetailsList.get(position).getOriginal_title());
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");

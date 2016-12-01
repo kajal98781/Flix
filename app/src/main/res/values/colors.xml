@@ -7,4 +7,5 @@
     <color name="black">#000000</color>
     <color name="dark_grey">#4b4747</color>
     <color name="grey">#fbfbfb</color>
+    <color name="photo_placeholder">#ccc</color>
 </resources>
