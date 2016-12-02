@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.brsoftech.core_utils.base.BaseAppCompatActivity;
 import com.kmdev.flix.R;
@@ -17,7 +18,7 @@ import com.squareup.picasso.Picasso;
 public class MovieImageFullScreenActivity extends BaseAppCompatActivity implements View.OnClickListener {
     private String mImageUrl;
     private ImageView mImageFullScreenView, mImageViewCross;
-    // private TextView mTvTitle, mTvDate;
+    private TextView mTvTitle, mTvDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
