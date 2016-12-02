@@ -66,6 +66,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //hide  title from toolbar
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setElevation(4);
 
         mRestClient = new RestClient(this);
         mSearchBeanList = new ArrayList<>();

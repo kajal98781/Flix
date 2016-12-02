@@ -10,6 +10,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -141,21 +142,13 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 //   mToolbar.setTitle(mResponseMovieDetails.getTitle());
                 mImageUrl = mResponseMovieDetails.getPoster_path();
                 Picasso.with(this)
-                        .load(ApiUrls.IMAGE_PATH_ULTRA + mResponseMovieDetails.getBackdrop_path())
+                        .load(ApiUrls.IMAGE_PATH_HIGH + mResponseMovieDetails.getBackdrop_path())
                         .placeholder(R.mipmap.ic_launcher)   // optional
                         .error(R.mipmap.ic_launcher)
                         .into(mImageMovieBack);
                 mTvMovieTitle.setText(mResponseMovieDetails.getOriginal_title());
                 mTvReleaseDate.setText(mResponseMovieDetails.getRelease_date());
 
-               /* if (!TextUtils.isEmpty(mMovieId)) {
-                    mProgressBarReview.setVisibility(View.VISIBLE);
-                    mTvLoadReview.setVisibility(View.VISIBLE);
-                    mRestClient.callback(this).getReviews(mMovieId);
-                    mProgressBarVideo.setVisibility(View.VISIBLE);
-                    mTvLoadingVideo.setVisibility(View.VISIBLE);
-                    mRestClient.callback(this).getVideos(mMovieId);
-                }*/
             }
 
         }
@@ -353,7 +346,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private void shareMovieDetails() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, mTitle + "/n" + mTvDescription.getText());
+        sendIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("<b><center>" + mTitle + "</center></b") + "\n\n" +
+                Html.fromHtml("<b><center>" + mTvDescription.getText().toString() + "</center></b"));
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
     }

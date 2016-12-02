@@ -5,21 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.kmdev.flix.ui.activities.HomeActivity">
+    tools:context="com.kmdev.flix.ui.activities.SearchMovieActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay"
-        app:elevation="0dp">
+        android:elevation="4dp"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:elevation="0dp"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
+            android:elevation="4dp"
             app:theme="@style/AppTheme_Grey">
 
             <EditText
@@ -28,9 +27,11 @@
                 android:layout_height="wrap_content"
                 android:background="#00ffffff"
                 android:hint="@string/search"
+                android:singleLine="true"
                 android:textColor="@color/black"
                 android:textColorHint="@color/dark_grey" />
         </android.support.v7.widget.Toolbar>
+
 
     </android.support.design.widget.AppBarLayout>
 

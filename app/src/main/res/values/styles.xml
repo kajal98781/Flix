@@ -15,7 +15,10 @@
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+    </style>
 
     <style name="AppTheme_Pre1" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
@@ -63,9 +66,8 @@
         </item>
         <item name="android:windowAllowReturnTransitionOverlap" tools:targetApi="lollipop">true
         </item>
-
         <item name="colorPrimary">@color/colorPrimary1</item>
-        <item name="colorPrimaryDark">@color/colorPrimary1</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark1</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/black</item>
 
@@ -75,5 +77,6 @@
     </style>
 
 
-    <color name="colorPrimary1">#f1eeee</color>
+    <color name="colorPrimary1">#f5f5f5</color>
+    <color name="colorPrimaryDark1">#dbdbdb</color>
 </resources>

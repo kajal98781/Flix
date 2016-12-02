@@ -8,4 +8,5 @@
     <color name="dark_grey">#4b4747</color>
     <color name="grey">#fbfbfb</color>
     <color name="photo_placeholder">#ccc</color>
+    <color name="gradient_start">#dedede</color>
 </resources>

@@ -39,7 +39,7 @@ public class SearchMovieAdapter extends RecyclerView.Adapter<SearchMovieAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
-                .load(ApiUrls.IMAGE_PATH_ULTRA + mSearchMovieList.get(position).getBackdrop_path())
+                .load(ApiUrls.IMAGE_PATH_ULTRA + mSearchMovieList.get(position).getPoster_path())
                 .placeholder(R.color.photo_placeholder)   // optional
                 .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
