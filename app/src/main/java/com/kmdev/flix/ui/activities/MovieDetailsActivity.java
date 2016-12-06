@@ -77,6 +77,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -172,6 +173,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+                //set relase date
+                int i = 3;
                 //   mTvReleaseDate.setText(mResponseMovieDetails.getRelease_date());
 
             }
