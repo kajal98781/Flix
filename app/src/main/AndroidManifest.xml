@@ -18,7 +18,8 @@
             android:theme="@style/AppTheme_Pre1"></activity>
         <activity
             android:name=".ui.activities.MovieDetailsActivity"
-            android:theme="@style/AppTheme_Pre1" />
+            android:theme="@style/AppTheme_FullScreen"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.activities.MovieImageFullScreenActivity"
             android:theme="@style/AppTheme_Pre1" />

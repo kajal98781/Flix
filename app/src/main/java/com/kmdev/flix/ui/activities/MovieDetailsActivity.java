@@ -33,12 +33,17 @@ import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
 import com.kmdev.flix.ui.adapters.ReviewMovieAdapter;
 import com.kmdev.flix.ui.adapters.VideoMovieAdapter;
+import com.kmdev.flix.ui.views.SimpleTextSwitcher;
+import com.kmdev.flix.utils.AppBarStateChangeListener;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.DataBaseHelper;
 import com.kmdev.flix.utils.Utils;
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -68,13 +73,20 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private ResponseMovieVideo mResponseMovieVideo;
     private boolean mIsLoadingReview = false;
     private boolean mIsLoadingTrailers = false;
+    private SimpleTextSwitcher mSimpleTextSwitcherToolbarTitle;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+      /*  requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+*/
         setContentView(R.layout.activity_movie_details);
+
         bindViewsById();
+
         init(savedInstanceState);
 
 
@@ -105,6 +117,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mTvLoadReview = (TextView) findViewById(R.id.tv_loading_review);
         mTvLoadingVideo = (TextView) findViewById(R.id.tv_loading_video);
         mFabFavourite = (FloatingActionButton) findViewById(R.id.fab_favorite);
+        mSimpleTextSwitcherToolbarTitle = (SimpleTextSwitcher) findViewById(R.id.simple_text_switcher_toolbar_title);
+
     }
 
     private void init(Bundle savedInstanceState) {
@@ -147,7 +161,18 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                         .error(R.mipmap.ic_launcher)
                         .into(mImageMovieBack);
                 mTvMovieTitle.setText(mResponseMovieDetails.getOriginal_title());
-                mTvReleaseDate.setText(mResponseMovieDetails.getRelease_date());
+                SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
+                try {
+                    Date date = simpleDateFormat1.parse(mResponseMovieDetails.getRelease_date());
+                    String releaseDate = simpleDateFormat.format(date);
+                    Date formattedDate = simpleDateFormat.parse(releaseDate);
+                    mTvReleaseDate.setText(simpleDateFormat.format(formattedDate));
+
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                //   mTvReleaseDate.setText(mResponseMovieDetails.getRelease_date());
 
             }
 
@@ -175,7 +200,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 });
 
 
-        mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+      /*  mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             boolean isShow = false;
             int scrollRange = -1;
 
@@ -185,18 +210,35 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     scrollRange = appBarLayout.getTotalScrollRange();
                 }
                 if (scrollRange + verticalOffset == 0) {
-                    getSupportActionBar().setDisplayShowTitleEnabled(true);
-                    Utils.applyFontForToolbarTitle(MovieDetailsActivity.this);
-
-                    getSupportActionBar().setTitle(mTitle);
-                    isShow = true;
+//                    getSupportActionBar().setDisplayShowTitleEnabled(true);
+//                    Utils.applyFontForToolbarTitle(MovieDetailsActivity.this);
+//
+//                    getSupportActionBar().setTitle(mTitle);
+                    showToolbarContents();
+                   isShow = true;
                 } else if (isShow) {
-                    mCollapsingToolbarLayout.setTitle(" ");//carefull there should a space between double quote otherwise it wont work
+                  *//*  mCollapsingToolbarLayout.setTitle(" ");//carefull there should a space between double quote otherwise it wont work
                     getSupportActionBar().setDisplayShowTitleEnabled(false);
-                    isShow = false;
+                    isShow = false;*//*
+                    hideToolbarContents();
+                }
+            }
+        });*/
+
+        mAppBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
+            @Override
+            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+                switch (state) {
+                    case COLLAPSED:
+                        showToolbarContents();
+                        break;
+                    case EXPANDED:
+                        hideToolbarContents();
+                        break;
                 }
             }
         });
+
         //get reviews from database
         if (isComeFromFavourites) {
             DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mMovieId));
@@ -246,6 +288,23 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
     }
 
+    private void hideToolbarContents() {
+        mSimpleTextSwitcherToolbarTitle.animate()
+                .alpha(0.0f)
+                .setDuration(300)
+                .start();
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+
+    }
+
+    private void showToolbarContents() {
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+
+        mSimpleTextSwitcherToolbarTitle.animate()
+                .alpha(1.0f)
+                .setDuration(300)
+                .start();
+    }
 
     private void checkMovieExistIntofavourites() {
         boolean checkFav = mDatabase.checkISDataExist(mMovieId);

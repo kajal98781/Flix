@@ -55,8 +55,8 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
 
             Picasso.with(this)
                     .load(ApiUrls.IMAGE_PATH_ULTRA + mImageUrl)
-                    .error(R.mipmap.ic_launcher)
-                    .placeholder(R.mipmap.ic_launcher)
+                    .error(R.color.photo_placeholder)
+                    .placeholder(R.color.dark_grey)
                     .into(mImageFullScreenView);
         }
        /* if(!TextUtils.isEmpty(mTitle))

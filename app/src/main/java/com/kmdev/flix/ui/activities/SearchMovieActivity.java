@@ -3,6 +3,7 @@ package com.kmdev.flix.ui.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -87,13 +88,25 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 if (!TextUtils.isEmpty(searchQuery)) {
                     callSearchMovie(searchQuery);
                 } else {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSearchBeanList.clear();
+                            mSearchMovieAdapter.notifyDataSetChanged();
 
+                        }
+                    }, 300);
                 }
 
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+              /*  if(TextUtils.isEmpty(s))
+                {
+                    mSearchBeanList.clear();
+                    mSearchMovieAdapter.notifyDataSetChanged();
+                }*/
 
             }
         });
