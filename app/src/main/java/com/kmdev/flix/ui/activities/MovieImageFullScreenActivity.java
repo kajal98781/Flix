@@ -36,17 +36,12 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
         Bundle bundle = getIntent().getExtras();
         mImageUrl = bundle.getString(Constants.FULL_IMAGE_URL);
     }
-      /*  mTitle = bundle.getString(Constants.MOVIE_TITLE);
-        mDate = bundle.getString(Constants.MOVIE_RELEASE_DATE);
-    }*/
+
 
     private void bindViewsById() {
         mImageFullScreenView = (ImageView) findViewById(R.id.imageFullView);
         mImageViewCross = (ImageView) findViewById(R.id.img_cross);
-/*
-        mTvTitle = (TextView) findViewById(R.id.tv_title);
-        mTvDate = (TextView) findViewById(R.id.tv_date);
-*/
+
         mImageViewCross.setOnClickListener(this);
     }
 
@@ -55,18 +50,9 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
 
             Picasso.with(this)
                     .load(ApiUrls.IMAGE_PATH_ULTRA + mImageUrl)
-                    .error(R.color.photo_placeholder)
-                    .placeholder(R.color.dark_grey)
                     .into(mImageFullScreenView);
         }
-       /* if(!TextUtils.isEmpty(mTitle))
-        {
-            mTvTitle.setText(mTitle);
-        }
-        if(!TextUtils.isEmpty(mDate))
-        {
-            mTvDate.setText(mDate);
-        }*/
+
     }
 
 

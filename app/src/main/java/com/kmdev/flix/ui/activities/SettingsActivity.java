@@ -30,11 +30,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.pref_settings);
         setupActionBar();
-      /*  getSupportActionBar().show();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //hide  title from toolbar
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-*/
+
 
     }
 

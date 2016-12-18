@@ -19,7 +19,8 @@
             android:layout_margin="@dimen/text_margin"
             android:text="@string/description"
             android:textAppearance="@style/TextAppearance.FontPath.BOLD"
-            android:textColor="@color/black" />
+            android:textColor="@color/black"
+            android:textSize="@dimen/dp_16dp" />
 
         <TextView
             android:id="@+id/tv_description"
