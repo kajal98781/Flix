@@ -34,6 +34,11 @@ public class SplashScreenActivity extends AppCompatActivity {
         thread.start();
 
     }
+   /* @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }*/
+
 
 
 }

@@ -27,6 +27,7 @@ import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.RestClient.ApiIds;
 import com.kmdev.flix.RestClient.ApiUrls;
 import com.kmdev.flix.RestClient.RestClient;
+import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
@@ -37,6 +38,8 @@ import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.DataBaseHelper;
 import com.kmdev.flix.utils.Utils;
 import com.squareup.picasso.Picasso;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -343,14 +346,18 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     @Override
     public void onFailResponse(int apiId, String error) {
         dismissLoadingDialog();
-        displayErrorDialog(getResources().getString(R.string.error), error);
+        if (getApplicationContext() != null) {
+            displayErrorDialog(getResources().getString(R.string.error), error);
+        }
     }
 
     @Override
     public void networkNotAvailable() {
         dismissLoadingDialog();
-        displayErrorDialog(R.string.error, R.string.internet_connection);
+        if (getApplicationContext() != null) {
+            displayErrorDialog(R.string.error, R.string.internet_connection);
 
+        }
     }
 
     @Override
@@ -363,10 +370,13 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                         mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
                         mIsFavorite = false;
                         displayShortToast(R.string.add_to_favourites);
+                        EventBus.getDefault().post(new DataBaseEventUpdateModel());
+
                     } else {
                         mFabFavourite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
                         displayShortToast(R.string.remove_to_favourites);
                         removeFromFavourites();
+                        EventBus.getDefault().post(new DataBaseEventUpdateModel());
                         mIsFavorite = true;
                     }
                 } else {
@@ -429,12 +439,14 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private void callImageFullScreen() {
         Intent intent = new Intent(MovieDetailsActivity.this, MovieImageFullScreenActivity.class);
         intent.putExtra(Constants.FULL_IMAGE_URL, mImageUrl);
+        intent.putExtra(Constants.MOVIE_TITLE, mTitle);
+
         startActivity(intent);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        startActivity(HomeActivity.class);
+        finish();
     }
 }

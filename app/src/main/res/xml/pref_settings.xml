@@ -4,7 +4,9 @@
     <com.kmdev.flix.ui.dialogs.ClearFavDialogPrefrence android:title="@string/titile_clear_fav" />
     <com.kmdev.flix.ui.dialogs.AboutDialogPrefrencce android:title="@string/title_about" />
     <com.kmdev.flix.ui.dialogs.VersionDialogPrefrence android:title="@string/title_version" />
-    <com.kmdev.flix.ui.dialogs.LicenceDialogPrefrence android:title="@string/title_licence" />
+    <!--
+        <com.kmdev.flix.ui.dialogs.LicenceDialogPrefrence android:title="@string/title_licence" />
+    -->
 
 
 </PreferenceScreen>

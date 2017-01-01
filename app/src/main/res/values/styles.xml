@@ -37,6 +37,21 @@
         -->
     </style>
 
+    <style name="AppTheme_Splash" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowContentTransitions" tools:targetApi="lollipop">true</item>
+        <!-- enable overlap of transitions -->
+        <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="lollipop">true
+        </item>
+        <item name="android:windowAllowReturnTransitionOverlap" tools:targetApi="lollipop">true
+        </item>
+
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@drawable/splash_bg</item>
+    </style>
+
 
     <style name="AppTheme_FullScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="windowActionBar">false</item>

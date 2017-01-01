@@ -1,9 +1,14 @@
 package com.kmdev.flix.utils;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Environment;
+import android.support.annotation.RequiresPermission;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -46,5 +51,24 @@ public class Utils {
                 }
             }
         }
+    }
+
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static void downloadFile(Context context,
+                                    String fileURL,
+                                    String fileName,
+                                    String title) {
+        String servicestring = Context.DOWNLOAD_SERVICE;
+        DownloadManager downloadmanager;
+        downloadmanager = (DownloadManager) context.getSystemService(servicestring);
+        Uri uri = Uri.parse(fileURL);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+        Long reference = downloadmanager.enqueue(request.setAllowedNetworkTypes(
+                DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                .setAllowedOverRoaming(false)
+                .setTitle(title)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+
+        );
     }
 }

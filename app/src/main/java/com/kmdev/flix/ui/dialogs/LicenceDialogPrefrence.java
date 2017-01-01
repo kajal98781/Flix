@@ -17,7 +17,7 @@ public class LicenceDialogPrefrence extends DialogPreference {
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        builder.setTitle(R.string.title_licence);
+        builder.setTitle(R.string.message_licence);
         super.onPrepareDialogBuilder(builder);
     }
 }

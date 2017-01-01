@@ -17,7 +17,7 @@ public class AboutDialogPrefrencce extends DialogPreference {
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        builder.setMessage(R.string.title_about);
+        builder.setMessage(R.string.message_about);
         builder.setTitle(R.string.title_about);
         super.onPrepareDialogBuilder(builder);
     }

@@ -6,10 +6,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -19,11 +21,12 @@ import com.google.gson.Gson;
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.RestClient.ApiIds;
+import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
-import com.kmdev.flix.ui.adapters.PopularMovieAdapter;
+import com.kmdev.flix.ui.adapters.HomeMoviesAdapter;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.ItemOffsetDecoration;
 
@@ -33,10 +36,13 @@ import java.util.List;
 /**
  * Created by Kajal on 10/2/2016.
  */
-public class PopularMovieFragment extends BaseSupportFragment implements ApiHitListener, SwipeRefreshLayout.OnRefreshListener {
+public class HomeMovieFragment extends BaseSupportFragment implements ApiHitListener, SwipeRefreshLayout.OnRefreshListener, HomeMoviesAdapter.OnRetryListener {
+    public static final String ARG_POPULAR = "popular";
+    public static final String ARG_TOP_RATED = "top_rated";
+    private static final String ARG_TYPE = "type";
     private RestClient mRestClient;
     private RecyclerView mRecyclerPopularMovie;
-    private PopularMovieAdapter mPopularMovieAdapter;
+    private HomeMoviesAdapter mHomeMoviesAdapter;
     private List<ResponsePopularMovie.PopularMovie> mPopularMovieList = new ArrayList<>();
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ProgressBar mProgressBar;
@@ -45,11 +51,13 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
     private int mCurrentPage = 1;
     private int mPastVisibleItems, mVisibleItemCount, mTotalItemCount;
     private boolean mIsLoadingNewItems = false;
+    private FrameLayout mFrameNetworkError;
 
 
-    public static PopularMovieFragment newInstance() {
+    public static HomeMovieFragment newInstance(String type) {
         Bundle args = new Bundle();
-        PopularMovieFragment fragment = new PopularMovieFragment();
+        args.putString(ARG_TYPE, type);
+        HomeMovieFragment fragment = new HomeMovieFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,6 +79,7 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
         //mProgressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
         mTvLoading = (TextView) view.findViewById(R.id.tv_loading);
         mTvErrorShow = (TextView) view.findViewById(R.id.tv_error_show);
+        // mFrameNetworkError= (FrameLayout) view.findViewById(R.id.frame_network_error);
     }
 
     private void init() {
@@ -78,14 +87,16 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
         mRecyclerPopularMovie.setLayoutManager(mStaggeredGridLayoutManager);
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
         mRecyclerPopularMovie.addItemDecoration(itemDecoration);
-        mPopularMovieAdapter = new PopularMovieAdapter(mPopularMovieList);
-        mRecyclerPopularMovie.setAdapter(mPopularMovieAdapter);
+        mHomeMoviesAdapter = new HomeMoviesAdapter(mPopularMovieList, this);
+        mRecyclerPopularMovie.setAdapter(mHomeMoviesAdapter);
         ItemClickSupport
                 .addTo(mRecyclerPopularMovie)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                        callMovieDetails(position);
+                        if (position != mHomeMoviesAdapter.getItemCount() - 1) {
+                            callMovieDetails(position);
+                        }
 
                     }
                 });
@@ -93,6 +104,7 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
         mSwipeRefreshLayout.setColorSchemeResources(R.color.black,
                 R.color.colorPrimary,
                 R.color.colorAccent);
+
 
         mRecyclerPopularMovie.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -103,21 +115,8 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                StaggeredGridLayoutManager linearLayoutManager = (StaggeredGridLayoutManager) mRecyclerPopularMovie.getLayoutManager();
-                // check if loading view (last item on our list) is visible
-                mVisibleItemCount = linearLayoutManager.getChildCount();
-                mTotalItemCount = linearLayoutManager.getItemCount();
-                int[] firstVisibleItems = null;
-                firstVisibleItems = linearLayoutManager.findFirstVisibleItemPositions(firstVisibleItems);
-                if (firstVisibleItems != null && firstVisibleItems.length > 0) {
-                    mPastVisibleItems = firstVisibleItems[0];
-                }
-                if ((mVisibleItemCount + mPastVisibleItems) >= mTotalItemCount) {
-                    mCurrentPage++;
-                    callPopularMovie();
-                    Log.d("tag", "LOAD NEXT ITEM");
-
-                }
+                //  mTvErrorShow.setVisibility(View.GONE);
+                onScrollLoadMovies();
 
 
             }
@@ -127,29 +126,49 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
 
     }
 
-    private void callPopularMovie() {
-        if (mCurrentPage == 1) {
-            mIsLoadingNewItems = false;
-        } else {
+    private void onScrollLoadMovies() {
+        StaggeredGridLayoutManager linearLayoutManager = (StaggeredGridLayoutManager) mRecyclerPopularMovie.getLayoutManager();
+        // check if loading view (last item on our list) is visible
+        mVisibleItemCount = linearLayoutManager.getChildCount();
+        mTotalItemCount = linearLayoutManager.getItemCount();
+        int[] firstVisibleItems = null;
+        firstVisibleItems = linearLayoutManager.findFirstVisibleItemPositions(firstVisibleItems);
+        if (firstVisibleItems != null && firstVisibleItems.length > 0) {
+            mPastVisibleItems = firstVisibleItems[0];
+        }
 
-            if (!mIsLoadingNewItems) {
-                mIsLoadingNewItems = true;
-                mRestClient.callback(this).getPopularMovies(mCurrentPage);
+        if ((mVisibleItemCount + mPastVisibleItems) >= mTotalItemCount) {
+            mCurrentPage++;
+            callMovies();
+
+            Log.d("tag", "LOAD NEXT ITEM");
+
+        }
+    }
+
+    private void callMovies() {
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            if (mCurrentPage == 1) {
+                mIsLoadingNewItems = false;
+            } else {
+                if (!mIsLoadingNewItems) {
+                    mIsLoadingNewItems = true;
+                    getMovies();
+                }
             }
         }
 
 
-     /*   int index = mPopularMovieAdapter.getItemCount() - 1;
-        for (int i = index; i < index + 10; i++) {
-            mPopularMovieAdapter.add(new Item("Kajal_" + i));
-        }*/
-
     }
 
-    private void callMovieDetails(int position) {
-        displayLoadingDialog(true);
-        mRestClient.callback(this).getMovieDetails(String.valueOf(mPopularMovieList.get(position).getId()));
 
+    private void callMovieDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getMovieDetails(String.valueOf(mPopularMovieList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
 
     }
 
@@ -161,7 +180,19 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
         // displayLoadingDialog(true);
         mProgressBar.setVisibility(View.VISIBLE);
         mTvLoading.setVisibility(View.VISIBLE);
-        mRestClient.callback(this).getPopularMovies(mCurrentPage);
+        getMovies();
+    }
+
+    private void getMovies() {
+        if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_POPULAR)) {
+            mRestClient.callback(this).getPopularMovies(mCurrentPage);
+
+        } else if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_TOP_RATED))
+
+        {
+            mRestClient.callback(this).getTopRatedMovies(mCurrentPage);
+
+        }
     }
 
     @Override
@@ -169,7 +200,8 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
         dismissLoadingDialog();
         mProgressBar.setVisibility(View.GONE);
         mTvLoading.setVisibility(View.GONE);
-        if (apiId == ApiIds.ID_POPULAR_MOVIES) {
+        mTvErrorShow.setVisibility(View.GONE);
+        if (apiId == ApiIds.ID_POPULAR_MOVIES || apiId == ApiIds.ID_TOP_RATED_MOVIES) {
             mSwipeRefreshLayout.setRefreshing(false);
             ResponsePopularMovie responsePopularMovie = (ResponsePopularMovie) response;
             if (responsePopularMovie != null) {
@@ -177,8 +209,8 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
                 if (popularMovie != null && popularMovie.size() > 0) {
                     //   mPopularMovieList.clear();
                     mPopularMovieList.addAll(popularMovie);
-                    if (mPopularMovieAdapter != null) {
-                        mPopularMovieAdapter.notifyDataSetChanged();
+                    if (mHomeMoviesAdapter != null) {
+                        mHomeMoviesAdapter.notifyDataSetChanged();
                         mIsLoadingNewItems = false;
 
                     }
@@ -202,25 +234,45 @@ public class PopularMovieFragment extends BaseSupportFragment implements ApiHitL
     @Override
     public void onFailResponse(int apiId, String error) {
         mProgressBar.setVisibility(View.GONE);
+        mSwipeRefreshLayout.setRefreshing(false);
+
         mTvLoading.setVisibility(View.GONE);
-        if (getActivity() != null) {
-            mTvErrorShow.setText(R.string.unable_load_movies);
-            mTvErrorShow.setVisibility(View.VISIBLE);
+        if (mHomeMoviesAdapter != null) {
+            if (getActivity() != null && mHomeMoviesAdapter.getItemCount() == 0) {
+                mTvErrorShow.setText(R.string.unable_load_movies);
+                mTvErrorShow.setVisibility(View.VISIBLE);
+            }
+        } else {
+            displayShortToast(R.string.unable_load_movies);
         }
 
     }
 
     @Override
     public void networkNotAvailable() {
+
         mProgressBar.setVisibility(View.GONE);
         mTvLoading.setVisibility(View.GONE);
-        // displayErrorDialog(R.string.error, R.string.internet_connection);
         mTvErrorShow.setVisibility(View.VISIBLE);
+        mSwipeRefreshLayout.setRefreshing(false);
+
 
     }
 
     @Override
     public void onRefresh() {
-        callPopularMovie();
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            callMovies();
+        } else {
+            displayShortToast(R.string.internet_connection);
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
+
+    }
+
+    @Override
+    public void onRetry() {
+        onScrollLoadMovies();
+
     }
 }

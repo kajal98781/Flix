@@ -57,6 +57,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public void onBackPressed() {
         super.onBackPressed();
         Intent intent = new Intent(this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 }

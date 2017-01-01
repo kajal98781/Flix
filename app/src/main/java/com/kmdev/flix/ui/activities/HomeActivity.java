@@ -19,8 +19,7 @@ import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.ui.adapters.HomeAdapter;
 import com.kmdev.flix.ui.fragments.FavouriteMovieFragment;
-import com.kmdev.flix.ui.fragments.PopularMovieFragment;
-import com.kmdev.flix.ui.fragments.TopRatedMovieFragment;
+import com.kmdev.flix.ui.fragments.HomeMovieFragment;
 import com.kmdev.flix.utils.Utils;
 
 import java.util.ArrayList;
@@ -61,6 +60,8 @@ public class HomeActivity extends BaseAppCompatActivity implements TabLayout.OnT
         mListFragments = new ArrayList<Fragment>();
         if (mToolBar != null) {
             setSupportActionBar(mToolBar);
+            //    getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+
             // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             // getSupportActionBar().setTitle(getTitle());
         }
@@ -69,8 +70,6 @@ public class HomeActivity extends BaseAppCompatActivity implements TabLayout.OnT
     }
 
     private void tabSelection() {
-
-
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.popular));
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.top_rated));
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.favourite));
@@ -80,8 +79,8 @@ public class HomeActivity extends BaseAppCompatActivity implements TabLayout.OnT
         mTitleList.add(getResources().getString(R.string.favourite));
 
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-        PopularMovieFragment popularFragment = PopularMovieFragment.newInstance();
-        TopRatedMovieFragment trendsFragment = TopRatedMovieFragment.newInstance();
+        HomeMovieFragment popularFragment = HomeMovieFragment.newInstance(HomeMovieFragment.ARG_POPULAR);
+        HomeMovieFragment trendsFragment = HomeMovieFragment.newInstance(HomeMovieFragment.ARG_TOP_RATED);
         FavouriteMovieFragment favouriteMovieFragment = FavouriteMovieFragment.newInstance();
 
         mListFragments.add(popularFragment);

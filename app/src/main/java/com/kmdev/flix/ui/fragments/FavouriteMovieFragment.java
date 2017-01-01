@@ -14,12 +14,17 @@ import com.brsoftech.core_utils.base.BaseSupportFragment;
 import com.brsoftech.core_utils.utils.ItemClickSupport;
 import com.google.gson.Gson;
 import com.kmdev.flix.R;
+import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
 import com.kmdev.flix.ui.adapters.FavouriteMovieAdapter;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.DataBaseHelper;
 import com.kmdev.flix.utils.ItemOffsetDecoration;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,26 +63,14 @@ public class FavouriteMovieFragment extends BaseSupportFragment implements View.
     private void init() {
         mMovieDetailsList = new ArrayList<>();
         mFavouriteMovieAdapter = new FavouriteMovieAdapter(mMovieDetailsList);
+        mDataBase = new DataBaseHelper(getActivity());
 
         //set favourite adapter to recycler
         mRecyclerViewFav.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mRecyclerViewFav.setAdapter(mFavouriteMovieAdapter);
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
         mRecyclerViewFav.addItemDecoration(itemDecoration);
-
-        //initialize database & get movies
-        mDataBase = new DataBaseHelper(getActivity());
-        List<ResponseMovieDetails> responseMovieDetailsList = mDataBase.getAllMovies();
-        if (responseMovieDetailsList.size() > 0) {
-            mMovieDetailsList.clear();
-            mMovieDetailsList.addAll(responseMovieDetailsList);
-            if (mFavouriteMovieAdapter != null) {
-                mFavouriteMovieAdapter.notifyDataSetChanged();
-            }
-        } else {
-            mTvNoFavAvail.setVisibility(View.VISIBLE);
-
-        }
+        callToGetFavouriteMovies();
         ItemClickSupport.
                 addTo(mRecyclerViewFav).
                 setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -89,17 +82,40 @@ public class FavouriteMovieFragment extends BaseSupportFragment implements View.
 
     }
 
+    public void callToGetFavouriteMovies() {
+
+        //initialize database & get movies
+        List<ResponseMovieDetails> responseMovieDetailsList = mDataBase.getAllMovies();
+        if (responseMovieDetailsList.size() > 0) {
+            mMovieDetailsList.clear();
+            mTvNoFavAvail.setVisibility(View.GONE);
+            mMovieDetailsList.addAll(responseMovieDetailsList);
+            if (mFavouriteMovieAdapter != null) {
+                mFavouriteMovieAdapter.notifyDataSetChanged();
+            }
+        } else {
+            mMovieDetailsList.clear();
+            if (mFavouriteMovieAdapter != null) {
+                mFavouriteMovieAdapter.notifyDataSetChanged();
+            }
+            mTvNoFavAvail.setVisibility(View.VISIBLE);
+
+        }
+    }
+
     private void callMovieDetails(int position) {
         ResponseMovieDetails responseMovieDetails = mMovieDetailsList.get(position);
-        displayLoadingDialog(true);
+        displayLoadingDialog(false);
         String res = new Gson().toJson(responseMovieDetails);
         if (res != null) {
+            dismissLoadingDialog();
             Intent movieDetailIntent = new Intent(getActivity(), MovieDetailsActivity.class);
             movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
             movieDetailIntent.putExtra(Constants.TYPE_IS_FAVOURITE, true);
             startActivity(movieDetailIntent);
         }
     }
+
 
     private void bindViewsById(View view) {
         mRecyclerViewFav = (RecyclerView) view.findViewById(R.id.reccycler_fav);
@@ -112,5 +128,25 @@ public class FavouriteMovieFragment extends BaseSupportFragment implements View.
     @Override
     public void onClick(View v) {
 
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDatabaseUpdateEvent(DataBaseEventUpdateModel dataBaseEventUpdateModel) {
+        callToGetFavouriteMovies();
     }
 }

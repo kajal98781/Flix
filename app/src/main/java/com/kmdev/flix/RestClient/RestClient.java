@@ -7,7 +7,6 @@ import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseSearchMovie;
-import com.kmdev.flix.models.ResponseTopRated;
 import com.kmdev.flix.retrofilt.Rest;
 import com.kmdev.flix.retrofilt.RestService;
 import com.kmdev.flix.utils.Constants;
@@ -42,7 +41,7 @@ public class RestClient extends BaseRestClient {
     }
 
     public void getPopularMovies(int current_page) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
 
 
             Call<ResponsePopularMovie> call = getApi().popularMovies(Constants.API_KEY, "en-US", current_page);
@@ -63,18 +62,18 @@ public class RestClient extends BaseRestClient {
     }
 
     public void getTopRatedMovies(int mCurrentPage) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
 
 
-            Call<ResponseTopRated> call = getApi().topRatedMovies(Constants.API_KEY, "en-US", mCurrentPage);
-            call.enqueue(new Callback<ResponseTopRated>() {
+            Call<ResponsePopularMovie> call = getApi().topRatedMovies(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponsePopularMovie>() {
                 @Override
-                public void onResponse(Call<ResponseTopRated> call, Response<ResponseTopRated> response) {
+                public void onResponse(Call<ResponsePopularMovie> call, Response<ResponsePopularMovie> response) {
                     apiHitListener.onSuccessResponse(ApiIds.ID_TOP_RATED_MOVIES, response.body());
                 }
 
                 @Override
-                public void onFailure(Call<ResponseTopRated> call, Throwable t) {
+                public void onFailure(Call<ResponsePopularMovie> call, Throwable t) {
                     apiHitListener.onFailResponse(ApiIds.ID_TOP_RATED_MOVIES, t.getMessage());
                 }
             });
@@ -84,7 +83,7 @@ public class RestClient extends BaseRestClient {
     }
 
     public void getMovieDetails(String movieId) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
             Call<ResponseMovieDetails> call = getApi().movieDetails(movieId, Constants.API_KEY, "en-US", "videos/images");
             call.enqueue(new Callback<ResponseMovieDetails>() {
                 @Override
@@ -103,7 +102,7 @@ public class RestClient extends BaseRestClient {
     }
 
     public void getReviews(String movieId) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
             Call<ResponseMovieReview> call = getApi().movieReviews(movieId, Constants.API_KEY);
             call.enqueue(new Callback<ResponseMovieReview>() {
                 @Override
@@ -122,7 +121,7 @@ public class RestClient extends BaseRestClient {
     }
 
     public void getVideos(String movieId) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
             Call<ResponseMovieVideo> call = getApi().movieVideos(movieId, Constants.API_KEY);
             call.enqueue(new Callback<ResponseMovieVideo>() {
                 @Override
@@ -141,7 +140,7 @@ public class RestClient extends BaseRestClient {
     }
 
     public void searchMovie(String query) {
-        if (ConnectionDetector.isConnectingToInternet(_context)) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
             Call<ResponseSearchMovie> call = getApi().searchMovie(Constants.API_KEY, "en-US", query);
             call.enqueue(new Callback<ResponseSearchMovie>() {
                 @Override

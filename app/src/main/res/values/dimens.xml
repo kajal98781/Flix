@@ -27,4 +27,5 @@
     <dimen name="padding_progress_bar">10dp</dimen>
     <dimen name="spacing">4dp</dimen>
     <dimen name="toolbar_content_margin_end">16dp</dimen>
+    <dimen name="dp_8">8dp</dimen>
 </resources>

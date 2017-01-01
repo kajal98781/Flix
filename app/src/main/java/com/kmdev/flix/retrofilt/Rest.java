@@ -5,7 +5,6 @@ import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponseMovieVideo;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseSearchMovie;
-import com.kmdev.flix.models.ResponseTopRated;
 import com.kmdev.flix.utils.BaseArguments;
 
 import retrofit2.Call;
@@ -24,9 +23,9 @@ public interface Rest {
 
 
     @GET("movie/top_rated/")
-    Call<ResponseTopRated> topRatedMovies(@Query(BaseArguments.ARG_API_KEY) String apiKey,
-                                          @Query(BaseArguments.ARG_LANGUAGE) String s,
-                                          @Query(BaseArguments.ARG_PAGE) int i);
+    Call<ResponsePopularMovie> topRatedMovies(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                              @Query(BaseArguments.ARG_LANGUAGE) String s,
+                                              @Query(BaseArguments.ARG_PAGE) int i);
 
     @GET("movie/" + "{movie_id}")
     Call<ResponseMovieDetails> movieDetails(@Path(BaseArguments.ARG_MOVIE_ID) String movieId,

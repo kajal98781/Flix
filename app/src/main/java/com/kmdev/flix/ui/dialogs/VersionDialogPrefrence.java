@@ -5,6 +5,7 @@ import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
+import com.kmdev.flix.BuildConfig;
 import com.kmdev.flix.R;
 
 /**
@@ -18,7 +19,7 @@ public class VersionDialogPrefrence extends DialogPreference {
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         builder.setTitle(R.string.title_version);
-        builder.setMessage(R.string.pref_title_new_message_notifications);
+        builder.setMessage(BuildConfig.VERSION_NAME);
         super.onPrepareDialogBuilder(builder);
     }
 }

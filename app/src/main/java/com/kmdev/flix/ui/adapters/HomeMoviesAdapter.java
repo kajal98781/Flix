@@ -6,12 +6,16 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiUrls;
+import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.squareup.picasso.Picasso;
 
@@ -23,14 +27,16 @@ import java.util.List;
 /**
  * Created by Kajal on 10/9/2016.
  */
-public class PopularMovieAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class HomeMoviesAdapter extends RecyclerView.Adapter<ViewHolder> {
     private static final int VIEW_TYPE_ITEM = 1;
     private static final int VIEW_TYPE_LOADING = 2;
     private ViewHolder mViewHolder;
     private List<ResponsePopularMovie.PopularMovie> mPopularMovieList;
+    private OnRetryListener mOnRetryListener;
 
-    public PopularMovieAdapter(List<ResponsePopularMovie.PopularMovie> popularMovieList) {
+    public HomeMoviesAdapter(List<ResponsePopularMovie.PopularMovie> popularMovieList, OnRetryListener onRetryListener) {
         mPopularMovieList = popularMovieList;
+        mOnRetryListener = onRetryListener;
     }
 
     @Override
@@ -85,13 +91,38 @@ public class PopularMovieAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     }
 
-    private void configureLoadingViewHolder(LoadingViewHolder holder, int position) {
+    private void configureLoadingViewHolder(final LoadingViewHolder holder, int position) {
         StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams) holder.itemView.getLayoutParams();
         layoutParams.setFullSpan(true);
         if (mPopularMovieList.size() == 0) {
             holder.progressBarLoading.setVisibility(View.GONE);
         } else {
-            holder.progressBarLoading.setVisibility(View.VISIBLE);
+            if (ConnectionDetector.isNetworkAvailable(holder.itemView.getContext())) {
+                holder.progressBarLoading.setVisibility(View.VISIBLE);
+                holder.layoutNetwork.setVisibility(View.GONE);
+            } else {
+                holder.progressBarLoading.setVisibility(View.GONE);
+                holder.layoutNetwork.setVisibility(View.VISIBLE);
+                holder.btnRetry.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mOnRetryListener != null &&
+                                ConnectionDetector.isNetworkAvailable(holder.itemView.getContext())) {
+                            holder.progressBarLoading.setVisibility(View.VISIBLE);
+                            holder.layoutNetwork.setVisibility(View.GONE);
+
+                            mOnRetryListener.onRetry();
+                        } else {
+                            Toast.makeText(holder.itemView.getContext(),
+                                    R.string.internet_connection,
+                                    Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    }
+                });
+
+
+            }
         }
 
     }
@@ -112,6 +143,10 @@ public class PopularMovieAdapter extends RecyclerView.Adapter<ViewHolder> {
         return VIEW_TYPE_ITEM;
     }
 
+    public interface OnRetryListener {
+        void onRetry();
+    }
+
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
         private TextView tvTitle, tvReleaseDate;
@@ -127,10 +162,14 @@ public class PopularMovieAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private static class LoadingViewHolder extends RecyclerView.ViewHolder {
         private ProgressBar progressBarLoading;
+        private RelativeLayout layoutNetwork;
+        private Button btnRetry;
 
         public LoadingViewHolder(View itemView) {
             super(itemView);
             progressBarLoading = (ProgressBar) itemView.findViewById(R.id.progress_bar_loading);
+            layoutNetwork = (RelativeLayout) itemView.findViewById(R.id.rl_network_error);
+            btnRetry = (Button) itemView.findViewById(R.id.btn_retry);
         }
     }
 

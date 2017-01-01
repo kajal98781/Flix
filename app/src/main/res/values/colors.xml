@@ -9,4 +9,6 @@
     <color name="grey">#fbfbfb</color>
     <color name="photo_placeholder">#ccc</color>
     <color name="gradient_start">#dedede</color>
+    <color name="colorPrimaryLight">#9c02888d</color>
+
 </resources>

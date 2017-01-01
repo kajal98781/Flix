@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.RestClient.ApiIds;
+import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseSearchMovie;
@@ -43,6 +44,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     private EditText mEtSearch;
     private List<ResponseSearchMovie.ResultsSearchBean> mSearchBeanList;
     private Toolbar mToolBar;
+    private TextView mTvError;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         mRecyclerSearch = (RecyclerView) findViewById(R.id.recycler_search);
         mEtSearch = (EditText) findViewById(R.id.et_search);
         mToolBar = (Toolbar) findViewById(R.id.toolbar);
+        mTvError = (TextView) findViewById(R.id.tv_error_show);
 
 
     }
@@ -145,9 +148,12 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     }
 
     private void callMovieDetails(int position) {
-        displayLoadingDialog(true);
-        mRestClient.callback(this).getMovieDetails(String.valueOf(mSearchBeanList.get(position).getId()));
-
+        if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getMovieDetails(String.valueOf(mSearchBeanList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
 
     }
 
@@ -166,6 +172,8 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     @Override
     public void onSuccessResponse(int apiId, Object response) {
         dismissLoadingDialog();
+        mTvError.setVisibility(View.GONE);
+
         if (apiId == ApiIds.ID_SEARCH_MOVIE) {
             ResponseSearchMovie resultsSearchBean = (ResponseSearchMovie) response;
             if (resultsSearchBean != null) {
@@ -188,6 +196,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 Intent movieDetailIntent = new Intent(this, MovieDetailsActivity.class);
                 movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
                 startActivity(movieDetailIntent);
+                finish();
             }
         }
 
@@ -196,11 +205,13 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
 
     @Override
     public void onFailResponse(int apiId, String error) {
-
+        mTvError.setText(R.string.unable_load_movies);
+        mTvError.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void networkNotAvailable() {
+        mTvError.setVisibility(View.VISIBLE);
 
 
     }

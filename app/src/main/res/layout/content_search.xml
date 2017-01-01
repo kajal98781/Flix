@@ -16,5 +16,24 @@
         android:clipToPadding="false"
         android:padding="@dimen/spacing" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/tv_error_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:drawableLeft="@drawable/ic_error_24dp"
+            android:drawablePadding="@dimen/dp_10"
+            android:gravity="center"
+            android:text="@string/internet_connection"
+            android:textAppearance="@style/TextAppearance.FontPath.REGULAR"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_medium"
+            android:visibility="gone" />
+    </FrameLayout>
 </RelativeLayout>
