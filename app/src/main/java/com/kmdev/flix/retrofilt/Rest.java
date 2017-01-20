@@ -2,9 +2,15 @@ package com.kmdev.flix.retrofilt;
 
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
-import com.kmdev.flix.models.ResponseMovieVideo;
+import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePopularMovie;
+import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
+import com.kmdev.flix.models.ResponseSearchTv;
+import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseTvPopular;
+import com.kmdev.flix.models.ResponseTvShow;
+import com.kmdev.flix.models.ResponseVideo;
 import com.kmdev.flix.utils.BaseArguments;
 
 import retrofit2.Call;
@@ -40,13 +46,81 @@ public interface Rest {
     );
 
     @GET("movie/" + "{movie_id}" + "/videos")
-    Call<ResponseMovieVideo> movieVideos(@Path(BaseArguments.ARG_MOVIE_ID) String movieId,
-                                         @Query(BaseArguments.ARG_API_KEY) String apiKey);
+    Call<ResponseVideo> movieVideos(@Path(BaseArguments.ARG_MOVIE_ID) String movieId,
+                                    @Query(BaseArguments.ARG_API_KEY) String apiKey);
 
     @GET("search/movie")
     Call<ResponseSearchMovie> searchMovie(@Query(BaseArguments.ARG_API_KEY) String apiKey,
                                           @Query(BaseArguments.ARG_LANGUAGE) String language,
                                           @Query(BaseArguments.ARG_QUERY) String query);
+
+
+    @GET("movie/now_playing/")
+    Call<ResponsePopularMovie> nowPlayingMovies(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                                @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                                @Query(BaseArguments.ARG_PAGE) int page);
+
+    @GET("tv/latest")
+    Call<ResponseTvShow> latestTvShows(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                       @Query(BaseArguments.ARG_LANGUAGE) String language);
+
+    @GET("tv/popular/")
+    Call<ResponseTvPopular> tvPopularShows(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                           @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                           @Query(BaseArguments.ARG_PAGE) int page);
+
+    @GET("tv/top_rated/")
+    Call<ResponseTvPopular> tvTopRated(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                       @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                       @Query(BaseArguments.ARG_PAGE) int page);
+
+    @GET("tv/" + "{tv_id}")
+    Call<ResponseTvDetails> tvDetails(@Path(BaseArguments.ARG_TV_ID) String tvId,
+                                      @Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                      @Query(BaseArguments.ARG_LANGUAGE) String s);
+
+
+    @GET("tv/" + "{tv_id}" + "/recommendations")
+    Call<ResponseRecommendations> tvReviews(
+            @Path(BaseArguments.ARG_TV_ID) String tvId,
+            @Query(BaseArguments.ARG_API_KEY) String apiKey,
+            @Query(BaseArguments.ARG_LANGUAGE) String language,
+            @Query(BaseArguments.ARG_PAGE) int page
+
+    );
+
+    @GET("tv/" + "{tv_id}" + "/videos")
+    Call<ResponseVideo> tvVideos(@Path(BaseArguments.ARG_TV_ID) String tvId,
+                                 @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+
+    @GET("search/tv")
+    Call<ResponseSearchTv> searchTvShows(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                         @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                         @Query(BaseArguments.ARG_QUERY) String query);
+
+    @GET("tv/airing_today")
+    Call<ResponseTvPopular> tvAirMovieToday(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                            @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                            @Query(BaseArguments.ARG_PAGE) int mCurrentPage);
+
+    @GET("tv/on_the_air")
+    Call<ResponseTvPopular> onTvMovies(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                       @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                       @Query(BaseArguments.ARG_PAGE) int mCurrentPage);
+
+    @GET("search/person")
+    Call<ResponsePeople> searchPeoples(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                       @Query(BaseArguments.ARG_LANGUAGE) String language,
+                                       @Query(BaseArguments.ARG_QUERY) String searchQuery,
+                                       @Query(BaseArguments.ARG_PAGE) int page,
+                                       @Query(BaseArguments.ARG_REGION) String in);
+
+
+
+
+
+
 
 
 

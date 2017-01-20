@@ -11,6 +11,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -27,7 +28,11 @@ import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseSearchMovie;
+import com.kmdev.flix.models.ResponseSearchTv;
+import com.kmdev.flix.models.ResponseTvDetails;
 import com.kmdev.flix.ui.adapters.SearchMovieAdapter;
+import com.kmdev.flix.ui.adapters.SearchTvAdapter;
+import com.kmdev.flix.ui.fragments.ItemListFragment;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.ItemOffsetDecoration;
 
@@ -39,12 +44,15 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHitListener {
     private RestClient mRestClient;
     private SearchMovieAdapter mSearchMovieAdapter;
+    private SearchTvAdapter mSearchTvAdapter;
     private RecyclerView mRecyclerSearch;
     private String mQuery;
     private EditText mEtSearch;
     private List<ResponseSearchMovie.ResultsSearchBean> mSearchBeanList;
+    private List<ResponseSearchTv.SearchBean> mSearchTvList;
     private Toolbar mToolBar;
     private TextView mTvError;
+    private String mType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,13 +79,23 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         //hide  title from toolbar
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setElevation(4);
+        mType = getIntent().getStringExtra(ItemListFragment.ARG_TYPE);
 
         mRestClient = new RestClient(this);
         mSearchBeanList = new ArrayList<>();
-        mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        mSearchMovieAdapter = new SearchMovieAdapter(mSearchBeanList);
-        mRecyclerSearch.setAdapter(mSearchMovieAdapter);
+        mSearchTvList = new ArrayList<>();
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+            mSearchMovieAdapter = new SearchMovieAdapter(mSearchBeanList);
+            mRecyclerSearch.setAdapter(mSearchMovieAdapter);
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+            mSearchTvAdapter = new SearchTvAdapter(mSearchTvList);
+            mRecyclerSearch.setAdapter(mSearchTvAdapter);
+
+        }
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(this, R.dimen.spacing);
+
         mRecyclerSearch.addItemDecoration(itemDecoration);
         mEtSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -89,13 +107,25 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String searchQuery = mEtSearch.getText().toString();
                 if (!TextUtils.isEmpty(searchQuery)) {
-                    callSearchMovie(searchQuery);
+                    if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                        callSearchMovie(searchQuery);
+                    } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+                        callSearchTv(searchQuery);
+                    }
                 } else {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            mSearchBeanList.clear();
-                            mSearchMovieAdapter.notifyDataSetChanged();
+                            if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                                mSearchBeanList.clear();
+                                mSearchMovieAdapter.notifyDataSetChanged();
+                            } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+                                mSearchTvList.clear();
+                                mSearchTvAdapter.notifyDataSetChanged();
+
+                            }
+
+
 
                         }
                     }, 300);
@@ -119,10 +149,13 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String searchQuery = mEtSearch.getText().toString();
                     if (!TextUtils.isEmpty(searchQuery)) {
+                        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                            displayLoadingDialog(false);
+                            callSearchMovie(searchQuery);
+                        }
+                    } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                         displayLoadingDialog(false);
-                        callSearchMovie(searchQuery);
-                    } else {
-
+                        callSearchTv(searchQuery);
                     }
 
                     return true;
@@ -133,12 +166,31 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         ItemClickSupport.addTo(mRecyclerSearch).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                callMovieDetails(position);
+                if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                    callMovieDetails(position);
+                } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+                    callTvDetails(position);
+                }
+
 
             }
         });
 
         //mToolBar.
+    }
+
+    private void callTvDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getTvShowDetails(String.valueOf(mSearchTvList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
+    }
+
+    private void callSearchTv(String searchQuery) {
+        mRestClient.callback(this).searchTvShows(searchQuery);
+
     }
 
     private void callSearchMovie(String searchQuery) {
@@ -154,7 +206,19 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         } else {
             displayShortToast(R.string.internet_connection);
         }
+        if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getMovieDetails(String.valueOf(mSearchBeanList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);//Menu Resource, Menu
+        return true;
     }
 
     @Override
@@ -195,7 +259,33 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
 
                 Intent movieDetailIntent = new Intent(this, MovieDetailsActivity.class);
                 movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
+                movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_MOVIES);
                 startActivity(movieDetailIntent);
+                finish();
+            }
+        } else if (apiId == ApiIds.ID_SEARCH_TV_SHOWS) {
+            ResponseSearchTv resultsSearchBean = (ResponseSearchTv) response;
+            if (resultsSearchBean != null) {
+                List<ResponseSearchTv.SearchBean> searchBeanList = resultsSearchBean.getSearch();
+                if (searchBeanList.size() > 0) {
+                    mSearchTvList.clear();
+                    mSearchTvList.addAll(searchBeanList);
+                    if (mSearchTvAdapter != null) {
+                        mSearchTvAdapter.notifyDataSetChanged();
+                    }
+
+
+                }
+            }
+        } else if (apiId == ApiIds.ID_TV_DETAILS) {
+            ResponseTvDetails responseTvDetails = (ResponseTvDetails) response;
+            String res = new Gson().toJson(responseTvDetails);
+            if (responseTvDetails != null) {
+
+                Intent tvDetailIntent = new Intent(this, MovieDetailsActivity.class);
+                tvDetailIntent.putExtra(Constants.TYPE_TV_SHOW_DETAILS, res);
+                tvDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_TV_SHOWS);
+                startActivity(tvDetailIntent);
                 finish();
             }
         }
@@ -205,8 +295,14 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
 
     @Override
     public void onFailResponse(int apiId, String error) {
-        mTvError.setText(R.string.unable_load_movies);
-        mTvError.setVisibility(View.VISIBLE);
+        if (apiId == ApiIds.ID_SEARCH_MOVIE && apiId == ApiIds.ID_MOVIE_DETAILS) {
+            mTvError.setText(R.string.unable_load_movies);
+            mTvError.setVisibility(View.VISIBLE);
+        } else {
+            mTvError.setText(R.string.unable_load_tv);
+            mTvError.setVisibility(View.VISIBLE);
+
+        }
     }
 
     @Override

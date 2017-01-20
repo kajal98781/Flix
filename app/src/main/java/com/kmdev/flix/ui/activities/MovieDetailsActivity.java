@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,9 +32,12 @@ import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
-import com.kmdev.flix.models.ResponseMovieVideo;
+import com.kmdev.flix.models.ResponseRecommendations;
+import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseVideo;
 import com.kmdev.flix.ui.adapters.ReviewMovieAdapter;
 import com.kmdev.flix.ui.adapters.VideoMovieAdapter;
+import com.kmdev.flix.ui.fragments.ItemListFragment;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.DataBaseHelper;
 import com.kmdev.flix.utils.Utils;
@@ -59,22 +63,25 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private ReviewMovieAdapter mReviewAdapter;
     private VideoMovieAdapter mVideoMovieAdapter;
     private List<ResponseMovieReview.ReviewBean> mReviewBeanList;
-    private List<ResponseMovieVideo.VideoBean> mVideoBeanList;
+    private List<ResponseVideo.VideoBean> mVideoBeanList;
     private String mImageUrl;
     private CollapsingToolbarLayout mCollapsingToolbarLayout;
     private AppBarLayout mAppBarLayout;
     private ProgressBar mProgressBar, mProgressBarVideo, mProgressBarReview, mProgressBarDetail;
     private TextView mTvLoadingVideo, mTvLoadReview, mTvLoadDetails;
     private FloatingActionButton mFabFavourite;
-    private boolean mIsFavorite;
+    private boolean mIsNotFav;
     private DataBaseHelper mDatabase;
-    private String mMovieId;
-    private String mTitle;
+    private String mId;
+    private String mTitle, mType;
     private ResponseMovieReview mResponseMovieReview;
-    private ResponseMovieVideo mResponseMovieVideo;
+    private ResponseVideo mResponseMovieVideo;
     private boolean mIsLoadingReview = false;
     private boolean mIsLoadingTrailers = false;
-    private TextView mTvTitleToolbar;
+    private TextView mTvTitleToolbar, mTvReview;
+    private ResponseTvDetails mResponseTvDetails;
+    private ResponseRecommendations mResponseRecommendations;
+    private FrameLayout mFrameReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +119,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mTvLoadingVideo = (TextView) findViewById(R.id.tv_loading_video);
         mTvTitleToolbar = (TextView) findViewById(R.id.tv_title_toolbar);
         mFabFavourite = (FloatingActionButton) findViewById(R.id.fab_favorite);
-
+        mTvReview = (TextView) findViewById(R.id.tv_review);
+        mFrameReview = (FrameLayout) findViewById(R.id.frame_review);
     }
 
     private void init(Bundle savedInstanceState) {
@@ -129,33 +137,71 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         //get parcelable data
         String movieDetails = getIntent().getStringExtra(Constants.TYPE_MOVIE_DETAILS);
+        mType = getIntent().getStringExtra(ItemListFragment.ARG_TYPE);
+        String tvDetails = getIntent().getStringExtra(Constants.TYPE_TV_SHOW_DETAILS);
         boolean isComeFromFavourites = getIntent().getBooleanExtra(Constants.TYPE_IS_FAVOURITE, false);
+        if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mTvReview.setVisibility(View.GONE);
+            mRecyclerViewReview.setVisibility(View.GONE);
+            mFrameReview.setVisibility(View.GONE);
+        }
 
         //set review adapter
         mRecyclerViewReview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mReviewAdapter = new ReviewMovieAdapter(mReviewBeanList);
         mRecyclerViewReview.setAdapter(mReviewAdapter);
+        mRecyclerViewReview.setNestedScrollingEnabled(false);
+
         //set video adapter
         mRecyclerViewVideos.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mVideoMovieAdapter = new VideoMovieAdapter(mVideoBeanList);
         mRecyclerViewVideos.setAdapter(mVideoMovieAdapter);
+        mRecyclerViewVideos.setNestedScrollingEnabled(false);
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            if (movieDetails != null && savedInstanceState == null) {
+                mResponseMovieDetails = new Gson().fromJson(movieDetails, ResponseMovieDetails.class);
+                if (mResponseMovieDetails != null) {
+                    mId = String.valueOf(mResponseMovieDetails.getId());
+                    checkMovieExistIntofavourites();
+                    mTvDescription.setText(mResponseMovieDetails.getOverview());
+                    mTitle = mResponseMovieDetails.getTitle();
+                    mImageUrl = mResponseMovieDetails.getPoster_path();
+                    Picasso.with(this)
+                            .load(ApiUrls.IMAGE_PATH_VERY_HIGH + mResponseMovieDetails.getBackdrop_path())
+                            .into(mImageMovieBack);
+                    mTvMovieTitle.setText(mResponseMovieDetails.getOriginal_title());
+                    SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
+                    try {
+                        Date date = simpleDateFormat1.parse(mResponseMovieDetails.getRelease_date());
+                        String releaseDate = simpleDateFormat.format(date);
+                        Date formattedDate = simpleDateFormat.parse(releaseDate);
+                        mTvReleaseDate.setText(simpleDateFormat.format(formattedDate));
 
-        if (movieDetails != null && savedInstanceState == null) {
-            mResponseMovieDetails = new Gson().fromJson(movieDetails, ResponseMovieDetails.class);
-            if (mResponseMovieDetails != null) {
-                mMovieId = String.valueOf(mResponseMovieDetails.getId());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+        } else if (tvDetails != null && savedInstanceState == null
+                && TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mResponseTvDetails = new Gson().fromJson(tvDetails, ResponseTvDetails.class);
+            if (mResponseTvDetails != null) {
+                mId = String.valueOf(mResponseTvDetails.getId());
                 checkMovieExistIntofavourites();
-                mTvDescription.setText(mResponseMovieDetails.getOverview());
-                mTitle = mResponseMovieDetails.getTitle();
-                mImageUrl = mResponseMovieDetails.getPoster_path();
+                mTvDescription.setText(mResponseTvDetails.getOverview());
+                mTitle = mResponseTvDetails.getName();
+                mImageUrl = mResponseTvDetails.getPoster_path();
                 Picasso.with(this)
-                        .load(ApiUrls.IMAGE_PATH_HIGH + mResponseMovieDetails.getBackdrop_path())
+                        .load(ApiUrls.IMAGE_PATH_HIGH + mResponseTvDetails.getBackdrop_path())
                         .into(mImageMovieBack);
-                mTvMovieTitle.setText(mResponseMovieDetails.getOriginal_title());
+                mTvMovieTitle.setText(mResponseTvDetails.getOriginal_name());
                 SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
                 try {
-                    Date date = simpleDateFormat1.parse(mResponseMovieDetails.getRelease_date());
+                    Date date = simpleDateFormat1.parse(mResponseTvDetails.getFirst_air_date());
                     String releaseDate = simpleDateFormat.format(date);
                     Date formattedDate = simpleDateFormat.parse(releaseDate);
                     mTvReleaseDate.setText(simpleDateFormat.format(formattedDate));
@@ -189,22 +235,6 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     }
                 });
 
-
-
-
-       /* mAppBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
-            @Override
-            public void onStateChanged(AppBarLayout appBarLayout, State state) {
-                switch (state) {
-                    case COLLAPSED:
-                        showToolbarContents();
-                        break;
-                    case EXPANDED:
-                        hideToolbarContents();
-                        break;
-                }
-            }
-        });*/
         mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             boolean isShow = false;
             int scrollRange = -1;
@@ -228,74 +258,131 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
         //get reviews from database
         if (isComeFromFavourites) {
-            DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mMovieId));
-            ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
-            if (responseMovieReview != null) {
-                List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
-                if (reviewBeanList.size() > 0) {
-                    mReviewBeanList.clear();
-                    mReviewBeanList.addAll(reviewBeanList);
-                    if (mReviewAdapter != null) {
-                        mReviewAdapter.notifyDataSetChanged();
+            if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mId));
+                ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
+                if (responseMovieReview != null) {
+                    List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
+                    if (reviewBeanList.size() > 0) {
+                        mReviewBeanList.clear();
+                        mReviewBeanList.addAll(reviewBeanList);
+                        if (mReviewAdapter != null) {
+                            mReviewAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvReviews.setVisibility(View.VISIBLE);
+                        mRecyclerViewReview.setVisibility(View.GONE);
                     }
-                } else {
-                    mTvReviews.setVisibility(View.VISIBLE);
-                    mRecyclerViewReview.setVisibility(View.GONE);
                 }
+                //get videos from database
+                ResponseVideo responseMovieVideo = dataBaseMovieDetails.getResponseMovieVideo();
+                if (responseMovieVideo != null) {
+                    List<ResponseVideo.VideoBean> videoBeanList = responseMovieVideo.getVideoBean();
+                    if (videoBeanList.size() > 0) {
+                        mVideoBeanList.clear();
+                        mVideoBeanList.addAll(videoBeanList);
+                        if (mVideoMovieAdapter != null) {
+                            mVideoMovieAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvVideos.setVisibility(View.VISIBLE);
+                        mRecyclerViewVideos.setVisibility(View.GONE);
+                    }
+                }
+            } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+                DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mId));
+                ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
+                if (responseMovieReview != null) {
+                    List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
+                    if (reviewBeanList.size() > 0) {
+                        mReviewBeanList.clear();
+                        mReviewBeanList.addAll(reviewBeanList);
+                        if (mReviewAdapter != null) {
+                            mReviewAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvReviews.setVisibility(View.VISIBLE);
+                        mRecyclerViewReview.setVisibility(View.GONE);
+                    }
+                }
+                //get videos from database
+                ResponseVideo responseMovieVideo = dataBaseMovieDetails.getResponseMovieVideo();
+                if (responseMovieVideo != null) {
+                    List<ResponseVideo.VideoBean> videoBeanList = responseMovieVideo.getVideoBean();
+                    if (videoBeanList.size() > 0) {
+                        mVideoBeanList.clear();
+                        mVideoBeanList.addAll(videoBeanList);
+                        if (mVideoMovieAdapter != null) {
+                            mVideoMovieAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvVideos.setVisibility(View.VISIBLE);
+                        mRecyclerViewVideos.setVisibility(View.GONE);
+                    }
+                }
+
             }
 
-            //get videos from database
-            ResponseMovieVideo responseMovieVideo = dataBaseMovieDetails.getResponseMovieVideo();
-            if (responseMovieVideo != null) {
-                List<ResponseMovieVideo.VideoBean> videoBeanList = responseMovieVideo.getVideoBean();
-                if (videoBeanList.size() > 0) {
-                    mVideoBeanList.clear();
-                    mVideoBeanList.addAll(videoBeanList);
-                    if (mVideoMovieAdapter != null) {
-                        mVideoMovieAdapter.notifyDataSetChanged();
-                    }
-                } else {
-                    mTvVideos.setVisibility(View.VISIBLE);
-                    mRecyclerViewVideos.setVisibility(View.GONE);
-                }
-            }
-        } else {
-            if (!TextUtils.isEmpty(mMovieId)) {
+
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            if (!TextUtils.isEmpty(mId)) {
                 mIsLoadingReview = true;
                 mIsLoadingTrailers = true;
                 mProgressBarReview.setVisibility(View.VISIBLE);
                 mTvLoadReview.setVisibility(View.VISIBLE);
-                mRestClient.callback(this).getReviews(mMovieId);
+                mRestClient.callback(this).getReviews(mId);
                 mProgressBarVideo.setVisibility(View.VISIBLE);
                 mTvLoadingVideo.setVisibility(View.VISIBLE);
-                mRestClient.callback(this).getVideos(mMovieId);
+                mRestClient.callback(this).getVideos(mId);
             }
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            if (!TextUtils.isEmpty(mId)) {
+                mIsLoadingReview = true;
+                mIsLoadingTrailers = true;
+                mProgressBarReview.setVisibility(View.VISIBLE);
+                mTvLoadReview.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getTvReviews(mId);
+                mProgressBarVideo.setVisibility(View.VISIBLE);
+                mTvLoadingVideo.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getTvVideos(mId);
+            }
+        }
+    }
+
+    private void hideToolbarContents() {
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            mTvTitleToolbar.setText(mResponseMovieDetails.getOriginal_title());
+            mTvTitleToolbar.setVisibility(View.GONE);
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mTvTitleToolbar.setVisibility(View.GONE);
+            mTvTitleToolbar.setText(mResponseTvDetails.getOriginal_name());
+
         }
 
 
     }
 
-    private void hideToolbarContents() {
-        mTvTitleToolbar.setText(mResponseMovieDetails.getOriginal_title());
-        mTvTitleToolbar.setVisibility(View.GONE);
-
-    }
-
     private void showToolbarContents() {
-        mTvTitleToolbar.setVisibility(View.VISIBLE);
-        mTvTitleToolbar.setText(mResponseMovieDetails.getOriginal_title());
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            mTvTitleToolbar.setVisibility(View.VISIBLE);
+            mTvTitleToolbar.setText(mResponseMovieDetails.getOriginal_title());
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mTvTitleToolbar.setVisibility(View.VISIBLE);
+            mTvTitleToolbar.setText(mResponseTvDetails.getOriginal_name());
+
+        }
 
 
     }
 
     private void checkMovieExistIntofavourites() {
-        boolean checkFav = mDatabase.checkISDataExist(mMovieId);
+        boolean checkFav = mDatabase.checkISDataExist(mId);
         if (checkFav) {
             mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
-            mIsFavorite = false;
+            mIsNotFav = false;
         } else {
             mFabFavourite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-            mIsFavorite = true;
+            mIsNotFav = true;
         }
 
     }
@@ -324,9 +411,9 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             mIsLoadingTrailers = false;
             mProgressBarVideo.setVisibility(View.GONE);
             mTvLoadingVideo.setVisibility(View.GONE);
-            mResponseMovieVideo = (ResponseMovieVideo) response;
+            mResponseMovieVideo = (ResponseVideo) response;
             if (mResponseMovieVideo != null) {
-                List<ResponseMovieVideo.VideoBean> videoBean = mResponseMovieVideo.getVideoBean();
+                List<ResponseVideo.VideoBean> videoBean = mResponseMovieVideo.getVideoBean();
                 if (videoBean.size() > 0) {
                     mVideoBeanList.clear();
                     mVideoBeanList.addAll(videoBean);
@@ -336,6 +423,42 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 } else {
                     mTvVideos.setVisibility(View.VISIBLE);
                     mRecyclerViewVideos.setVisibility(View.GONE);
+                }
+            }
+        } else if (apiId == ApiIds.ID_TV_VIDEOS) {
+            mIsLoadingTrailers = false;
+            mProgressBarVideo.setVisibility(View.GONE);
+            mTvLoadingVideo.setVisibility(View.GONE);
+            mResponseMovieVideo = (ResponseVideo) response;
+            if (mResponseMovieVideo != null) {
+                List<ResponseVideo.VideoBean> videoBean = mResponseMovieVideo.getVideoBean();
+                if (videoBean.size() > 0) {
+                    mVideoBeanList.clear();
+                    mVideoBeanList.addAll(videoBean);
+                    if (mVideoBeanList != null) {
+                        mVideoMovieAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    mTvVideos.setVisibility(View.VISIBLE);
+                    mRecyclerViewVideos.setVisibility(View.GONE);
+                }
+            }
+        } else if (apiId == ApiIds.ID_TV_REVIEW) {
+            mIsLoadingReview = false;
+            mProgressBarReview.setVisibility(View.GONE);
+            mTvLoadReview.setVisibility(View.GONE);
+            mResponseRecommendations = (ResponseRecommendations) response;
+            if (mResponseRecommendations != null) {
+                List<ResponseRecommendations.ResultsBean> reviewBeen = mResponseRecommendations.getResults();
+                if (reviewBeen.size() > 0) {
+                    //    mReviewBeanList.clear();
+                    //   mReviewBeanList.addAll(reviewBeen);
+                    if (mReviewAdapter != null) {
+                        mReviewAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    mTvReviews.setVisibility(View.VISIBLE);
+                    mRecyclerViewReview.setVisibility(View.GONE);
                 }
             }
         }
@@ -365,22 +488,27 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         switch (v.getId()) {
             case R.id.fab_favorite:
                 if (!mIsLoadingReview && !mIsLoadingTrailers) {
-                    if (mIsFavorite) {
+                    if (mIsNotFav) {
                         addToFavourites();
                         mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
-                        mIsFavorite = false;
-                        displayShortToast(R.string.add_to_favourites);
+                        mIsNotFav = false;
                         EventBus.getDefault().post(new DataBaseEventUpdateModel());
 
                     } else {
                         mFabFavourite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-                        displayShortToast(R.string.remove_to_favourites);
                         removeFromFavourites();
                         EventBus.getDefault().post(new DataBaseEventUpdateModel());
-                        mIsFavorite = true;
+                        mIsNotFav = true;
                     }
                 } else {
-                    displayShortToast(R.string.wait_data_loaded);
+                    String msg = null;
+                    if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+                        msg = getString(R.string.wait_data_loaded, "movies");
+                    } else {
+                        msg = getString(R.string.wait_data_loaded, "tv shows");
+
+                    }
+                    displayShortToast(msg);
                 }
                 break;
             case R.id.imageMovieBack:
@@ -424,15 +552,33 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private void addToFavourites() {
 
         DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
-        dataBaseMovieDetails.setResponseMovieDetails(mResponseMovieDetails);
-        dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
-        dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
-        dataBaseMovieDetails.setMovieId(mResponseMovieDetails.getId());
-        mDatabase.addMovies(dataBaseMovieDetails);
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            displayShortToast(R.string.add_to_favourites);
+            dataBaseMovieDetails.setResponseMovieDetails(mResponseMovieDetails);
+            dataBaseMovieDetails.setType(0);
+            dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
+            dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
+            dataBaseMovieDetails.setId(mResponseMovieDetails.getId());
+            mDatabase.addMovies(dataBaseMovieDetails);
+
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            displayShortToast(R.string.add_to_favourites_tv);
+            dataBaseMovieDetails.setResponseTvDetails(mResponseTvDetails);
+            dataBaseMovieDetails.setType(1);
+            dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
+            dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
+            dataBaseMovieDetails.setId(mResponseTvDetails.getId());
+            mDatabase.addMovies(dataBaseMovieDetails);
+        }
     }
 
     private void removeFromFavourites() {
-        mDatabase.deleteMovie(mMovieId);
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            displayShortToast(R.string.remove_to_favourites);
+        } else {
+            displayShortToast(R.string.remove_to_fav_show);
+        }
+        mDatabase.deleteMovie(mId);
 
     }
 

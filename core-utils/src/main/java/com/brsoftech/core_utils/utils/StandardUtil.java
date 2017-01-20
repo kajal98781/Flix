@@ -65,6 +65,15 @@ public class StandardUtil {
         fragmentTransaction.replace(viewResourceId, fragment, fragment.getClass().getSimpleName()).commit();
     }
 
+    /*  public static void setParentFragment(Context context, int viewResourceId, android.support.v4.app.Fragment fragment, boolean withAnimation) {
+          FragmentTransaction fragmentTransaction = ((Activity) context).getParent().getFragmentManager().beginTransaction();
+          if (withAnimation) {
+              fragmentTransaction.setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right, 0, 0);
+          }
+          fragmentTransaction.addToBackStack(fragment.getClass().getSimpleName());
+          fragmentTransaction.replace(viewResourceId, fragment, fragment.getClass().getSimpleName()).commit();
+      }
+  */
     public static void setFragmentWithoutBackStack(Context context, int viewResourceId, Fragment fragment, boolean withAnimation) {
         FragmentTransaction fragmentTransaction = ((Activity) context).getFragmentManager().beginTransaction();
         if (withAnimation) {

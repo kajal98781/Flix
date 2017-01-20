@@ -4,9 +4,14 @@ import android.content.Context;
 
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
-import com.kmdev.flix.models.ResponseMovieVideo;
+import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePopularMovie;
+import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
+import com.kmdev.flix.models.ResponseSearchTv;
+import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseTvPopular;
+import com.kmdev.flix.models.ResponseVideo;
 import com.kmdev.flix.retrofilt.Rest;
 import com.kmdev.flix.retrofilt.RestService;
 import com.kmdev.flix.utils.Constants;
@@ -122,15 +127,15 @@ public class RestClient extends BaseRestClient {
 
     public void getVideos(String movieId) {
         if (ConnectionDetector.isNetworkAvailable(_context)) {
-            Call<ResponseMovieVideo> call = getApi().movieVideos(movieId, Constants.API_KEY);
-            call.enqueue(new Callback<ResponseMovieVideo>() {
+            Call<ResponseVideo> call = getApi().movieVideos(movieId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponseVideo>() {
                 @Override
-                public void onResponse(Call<ResponseMovieVideo> call, Response<ResponseMovieVideo> response) {
+                public void onResponse(Call<ResponseVideo> call, Response<ResponseVideo> response) {
                     apiHitListener.onSuccessResponse(ApiIds.ID_MOVIE_VIDEO, response.body());
                 }
 
                 @Override
-                public void onFailure(Call<ResponseMovieVideo> call, Throwable t) {
+                public void onFailure(Call<ResponseVideo> call, Throwable t) {
                     apiHitListener.onFailResponse(ApiIds.ID_MOVIE_VIDEO, t.getMessage());
                 }
             });
@@ -151,6 +156,230 @@ public class RestClient extends BaseRestClient {
                 @Override
                 public void onFailure(Call<ResponseSearchMovie> call, Throwable t) {
                     apiHitListener.onFailResponse(ApiIds.ID_SEARCH_MOVIE, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void getMoviesNowPlaying(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+
+
+            Call<ResponsePopularMovie> call = getApi().nowPlayingMovies(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponsePopularMovie>() {
+                @Override
+                public void onResponse(Call<ResponsePopularMovie> call, Response<ResponsePopularMovie> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_NOW_PLAYING, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePopularMovie> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_NOW_PLAYING, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+    public void getUpcomingMovies(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+
+
+            Call<ResponsePopularMovie> call = getApi().nowPlayingMovies(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponsePopularMovie>() {
+                @Override
+                public void onResponse(Call<ResponsePopularMovie> call, Response<ResponsePopularMovie> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_UPCOMING_MOVIES, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePopularMovie> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_UPCOMING_MOVIES, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+
+    public void getTvPopularShows(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvPopular> call = getApi().tvPopularShows(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponseTvPopular>() {
+                @Override
+                public void onResponse(Call<ResponseTvPopular> call, Response<ResponseTvPopular> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_POPULAR, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvPopular> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_POPULAR, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void getTvTopRated(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvPopular> call = getApi().tvTopRated(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponseTvPopular>() {
+                @Override
+                public void onResponse(Call<ResponseTvPopular> call, Response<ResponseTvPopular> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_TOP_RATED, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvPopular> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_TOP_RATED, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+
+    }
+
+    public void getOnTvMovies(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvPopular> call = getApi().onTvMovies(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponseTvPopular>() {
+                @Override
+                public void onResponse(Call<ResponseTvPopular> call, Response<ResponseTvPopular> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_ON_TV, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvPopular> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_ON_TV, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+
+    }
+
+    public void getAiringMoviesToday(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvPopular> call = getApi().tvAirMovieToday(Constants.API_KEY,
+                    "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponseTvPopular>() {
+                @Override
+                public void onResponse(Call<ResponseTvPopular> call, Response<ResponseTvPopular> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_AIR_MOVIE_TODAY, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvPopular> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_AIR_MOVIE_TODAY, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void getTvShowDetails(String tvId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvDetails> call = getApi().tvDetails(tvId,
+                    Constants.API_KEY,
+                    "en-US");
+            call.enqueue(new Callback<ResponseTvDetails>() {
+                @Override
+                public void onResponse(Call<ResponseTvDetails> call, Response<ResponseTvDetails> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_DETAILS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvDetails> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_DETAILS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+    public void getTvVideos(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseVideo> call = getApi().tvVideos(mId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponseVideo>() {
+                @Override
+                public void onResponse(Call<ResponseVideo> call, Response<ResponseVideo> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_VIDEOS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseVideo> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_VIDEOS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+    public void getTvReviews(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseRecommendations> call = getApi().tvReviews(mId, Constants.API_KEY, "en-us", 1);
+            call.enqueue(new Callback<ResponseRecommendations>() {
+                @Override
+                public void onResponse(Call<ResponseRecommendations> call, Response<ResponseRecommendations> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_REVIEW, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseRecommendations> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_REVIEW, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void searchTvShows(String searchQuery) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseSearchTv> call = getApi().searchTvShows(Constants.API_KEY, "en-US", searchQuery);
+            call.enqueue(new Callback<ResponseSearchTv>() {
+                @Override
+                public void onResponse(Call<ResponseSearchTv> call, Response<ResponseSearchTv> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_SEARCH_TV_SHOWS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseSearchTv> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_SEARCH_TV_SHOWS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void searchPeoples(String searchQuery, int page) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePeople> call = getApi().searchPeoples(Constants.API_KEY, "en-US", searchQuery, page, "IN");
+            call.enqueue(new Callback<ResponsePeople>() {
+                @Override
+                public void onResponse(Call<ResponsePeople> call, Response<ResponsePeople> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_SEARCH_PEOPLE, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePeople> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_SEARCH_PEOPLE, t.getMessage());
                 }
             });
         } else {

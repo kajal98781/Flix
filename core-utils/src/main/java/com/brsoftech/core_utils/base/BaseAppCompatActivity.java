@@ -173,6 +173,9 @@ public class BaseAppCompatActivity extends AppCompatActivity {
     public void setFragment(int viewResourceId, android.support.v4.app.Fragment fragment, boolean withAnimation) {
         StandardUtil.setFragment(this, viewResourceId, fragment, withAnimation);
     }
+   /* public void setParentFragment(int viewResourceId, android.support.v4.app.Fragment fragment, boolean withAnimation) {
+        StandardUtil.setParentFragment(this, viewResourceId, fragment, withAnimation);
+    }*/
 
     public void setFragmentWithoutBackStack(int viewResourceId, Fragment fragment, boolean withAnimation) {
         StandardUtil.setFragmentWithoutBackStack(this, viewResourceId, fragment, withAnimation);

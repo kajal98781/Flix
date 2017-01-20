@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.kmdev.flix.R;
-import com.kmdev.flix.models.ResponseMovieVideo;
+import com.kmdev.flix.models.ResponseVideo;
 
 import java.util.List;
 
@@ -16,9 +16,9 @@ import java.util.List;
  */
 public class VideoMovieAdapter extends RecyclerView.Adapter<VideoMovieAdapter.ViewHolder> {
     private ViewHolder mViewHolder;
-    private List<ResponseMovieVideo.VideoBean> mVideoBeanList;
+    private List<ResponseVideo.VideoBean> mVideoBeanList;
 
-    public VideoMovieAdapter(List<ResponseMovieVideo.VideoBean> videoBeanList) {
+    public VideoMovieAdapter(List<ResponseVideo.VideoBean> videoBeanList) {
         mVideoBeanList = videoBeanList;
     }
 

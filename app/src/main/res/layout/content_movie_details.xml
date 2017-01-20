@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
+            android:layout_margin="@dimen/dp_16dp"
             android:text="@string/description"
             android:textAppearance="@style/TextAppearance.FontPath.BOLD"
             android:textColor="@color/black"
@@ -32,6 +32,7 @@
             android:textSize="@dimen/text_size_small" />
 
         <TextView
+            android:id="@+id/tv_review"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
@@ -41,6 +42,7 @@
             android:textSize="@dimen/dp_16dp" />
 
         <FrameLayout
+            android:id="@+id/frame_review"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

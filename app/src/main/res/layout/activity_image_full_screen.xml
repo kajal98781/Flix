@@ -43,6 +43,7 @@
             app:srcCompat="@drawable/ic_close_white_24dp" />
 
         <ImageView
+
             android:id="@+id/img_download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -52,7 +53,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:foreground="?attr/selectableItemBackgroundBorderless"
             android:padding="@dimen/dp_5"
-            android:visibility="visible"
+            android:visibility="gone"
             app:srcCompat="@drawable/ic_file_download_white_24dp" />
 
 

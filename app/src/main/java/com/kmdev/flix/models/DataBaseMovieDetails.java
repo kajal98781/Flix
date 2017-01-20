@@ -6,15 +6,33 @@ package com.kmdev.flix.models;
 public class DataBaseMovieDetails {
     private ResponseMovieDetails responseMovieDetails;
     private ResponseMovieReview responseMovieReview;
-    private ResponseMovieVideo responseMovieVideo;
-    private int movieId;
+    private ResponseVideo responseMovieVideo;
+    private ResponseTvDetails responseTvDetails;
+    private int type;
+    private int id;
 
-    public int getMovieId() {
-        return movieId;
+    public int getType() {
+        return type;
     }
 
-    public void setMovieId(int movieId) {
-        this.movieId = movieId;
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public ResponseTvDetails getResponseTvDetails() {
+        return responseTvDetails;
+    }
+
+    public void setResponseTvDetails(ResponseTvDetails responseTvDetails) {
+        this.responseTvDetails = responseTvDetails;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public ResponseMovieDetails getResponseMovieDetails() {
@@ -33,11 +51,11 @@ public class DataBaseMovieDetails {
         this.responseMovieReview = responseMovieReview;
     }
 
-    public ResponseMovieVideo getResponseMovieVideo() {
+    public ResponseVideo getResponseMovieVideo() {
         return responseMovieVideo;
     }
 
-    public void setResponseMovieVideo(ResponseMovieVideo responseMovieVideo) {
+    public void setResponseMovieVideo(ResponseVideo responseMovieVideo) {
         this.responseMovieVideo = responseMovieVideo;
     }
 }

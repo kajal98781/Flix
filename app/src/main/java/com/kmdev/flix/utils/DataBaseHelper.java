@@ -10,17 +10,20 @@ import com.google.gson.Gson;
 import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
-import com.kmdev.flix.models.ResponseMovieVideo;
+import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseVideo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class DataBaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "favouriteManager";
     private static final String TABLE_FAVOURITES = "myFavourites";
     private static final String KEY_FAVOURITE = "favourite";
+    //0 for movie ,1 for TV
+    private static final String KEY_TYPE = "type";
     private static final String KEY_ID = "movieId";
     private static final String KEY_REVIEW = "review";
     private static final String KEY_VIDEO = "video";
@@ -29,13 +32,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // Creating Tables
+    // Creating Tables/
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE_MOVIE = "CREATE TABLE " + TABLE_FAVOURITES + "("
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_FAVOURITE + " TEXT,"
+                + KEY_TYPE + " INTEGER,"
                 + KEY_REVIEW + " TEXT," + KEY_VIDEO + " TEXT" + ")";
-
 
 
         db.execSQL(CREATE_TABLE_MOVIE);
@@ -51,12 +54,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    // code to add the new message
+    // code to add the new messaage
     public void addMovies(DataBaseMovieDetails dataBaseMovieDetails) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(KEY_ID, dataBaseMovieDetails.getMovieId());
-        values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseMovieDetails())); // Contact Name
+        values.put(KEY_ID, dataBaseMovieDetails.getId());
+        if (dataBaseMovieDetails.getType() == 0) {
+            values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseMovieDetails())); // Contact Name
+            values.put(KEY_TYPE, new Gson().toJson(dataBaseMovieDetails.getType()));
+        } else if (dataBaseMovieDetails.getType() == 1) {
+            values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseTvDetails())); // Contact Name
+            values.put(KEY_TYPE, new Gson().toJson(dataBaseMovieDetails.getType()));
+        }
         values.put(KEY_REVIEW, new Gson().toJson(dataBaseMovieDetails.getResponseMovieReview()));
         values.put(KEY_VIDEO, new Gson().toJson(dataBaseMovieDetails.getResponseMovieVideo()));
         // Inserting Row
@@ -66,13 +75,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
 
-
-
     // code to get all contacts in a list view
     public List<ResponseMovieDetails> getAllMovies() {
         List<ResponseMovieDetails> movieList = new ArrayList<ResponseMovieDetails>();
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_FAVOURITES;
+        String selectQuery = "SELECT  * FROM " + TABLE_FAVOURITES + " WHERE " + KEY_TYPE + "=0";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -89,6 +96,29 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         // return contact list
         return movieList;
+    }
+
+    // code to get all contacts in a list view
+    public List<ResponseTvDetails> getAllTvShows() {
+        List<ResponseTvDetails> tvDetailsList = new ArrayList<ResponseTvDetails>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_FAVOURITES + " WHERE " + KEY_TYPE + "=1";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //   contact.setID(Integer.parseInt(cursor.getString(0)));
+                ResponseTvDetails tvDetails = new Gson().fromJson(cursor.getString(1), ResponseTvDetails.class);
+                // Adding contact to list
+                tvDetailsList.add(tvDetails);
+            } while (cursor.moveToNext());
+        }
+
+        // return contact list
+        return tvDetailsList;
     }
 
 
@@ -127,9 +157,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
         DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
-        dataBaseMovieDetails.setMovieId(id);
+        dataBaseMovieDetails.setId(id);
         dataBaseMovieDetails.setResponseMovieReview(new Gson().fromJson(cursor.getString(2), ResponseMovieReview.class));
-        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseMovieVideo.class));
+        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseVideo.class));
         dataBaseMovieDetails.setResponseMovieDetails(new Gson().fromJson(cursor.getString(1), ResponseMovieDetails.class));
 
         // return contact
@@ -146,8 +176,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
 
         DataBaseMovieDetails responseMovieDetails = new DataBaseMovieDetails();
-        responseMovieDetails.setMovieId(id);
-        responseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseMovieVideo.class));
+        responseMovieDetails.setId(id);
+        responseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseVideo.class));
         responseMovieDetails.setResponseMovieDetails(new Gson().fromJson(cursor.getString(1), ResponseMovieDetails.class));
         // return contact
         return responseMovieDetails;

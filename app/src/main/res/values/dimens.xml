@@ -28,4 +28,6 @@
     <dimen name="spacing">4dp</dimen>
     <dimen name="toolbar_content_margin_end">16dp</dimen>
     <dimen name="dp_8">8dp</dimen>
+    <dimen name="nav_header_vertical_spacing">16dp</dimen>
+    <dimen name="dp_3">3dp</dimen>
 </resources>

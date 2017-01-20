@@ -12,4 +12,6 @@ public class BaseArguments {
     public static final String ARG_MOVIE_ID = "movie_id";
     public static final String ARG_APPEND_RESPONSE = "append_to_response";
     public static final String ARG_QUERY = "query";
+    public static final String ARG_TV_ID = "tv_id";
+    public static final String ARG_REGION = "region";
 }

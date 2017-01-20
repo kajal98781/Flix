@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Flix</string>
-    <string name="popular">POPULAR</string>
+    <string name="popular">Popular</string>
     <string name="trends">Trends</string>
     <string name="title_activity_main2">Main2Activity</string>
     <string name="error">Error</string>
     <string name="internet_connection">Internet connection is not available</string>
-    <string name="top_rated">TOP RATED</string>
+    <string name="top_rated">Top Rated</string>
     <string name="title_activity_scrolling">ScrollingActivity</string>
     <string name="action_settings">Settings</string>
     <string name="description">Description</string>
@@ -86,11 +86,23 @@
     <string name="add_to_favourites">This movie is added successfully to your favourite movie list.</string>
     <string name="remove_to_favourites">Movie is removed successfully from your wishlist.</string>
     <string name="unable_load_movies">Unable to load movies.</string>
-    <string name="wait_data_loaded">Please wait for a while, movie data is being loaded.</string>
+    <string name="wait_data_loaded">Please wait for a while, %s data is being loaded.</string>
     <string name="search">Search</string>
     <string name="retry">Retry</string>
     <string name="message_about"><b>Flix</b> is a minimalistic movie catalog application through which you can view popular as well as top rated movies.\n\nDeveloper: <b>Kajal Mittal</b>\n\nContact: <b>kajal9878@gmail.com</b>\n\nIcon made by Freepik from www.flaticon.com</string>
     <string name="message_licence">
 
     </string>
+    <string name="movies">MOVIES</string>
+    <string name="tv_shows">TV SHOWS</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="airing_today">Airing Today</string>
+    <string name="on_tv">Currently On TV</string>
+    <string name="navigation_drawer_open">Drawer open</string>
+    <string name="navigation_drawer_close">Drawer closed</string>
+    <string name="unable_load_tv">Unable to load TV shows.</string>
+    <string name="add_to_favourites_tv">This show is added successfully to your favourite shows list</string>
+    <string name="remove_to_fav_show">Show is removed successfully from your wishlist.</string>
+    <string name="latest">Latest</string>
 </resources>

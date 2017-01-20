@@ -36,10 +36,7 @@ public class HomeAdapter extends FragmentStatePagerAdapter {
         return fragments.size();
     }
 
-    public void addFragment(Fragment f) {
-        fragments.add(f);
 
-    }
 
     @Override
     public CharSequence getPageTitle(int position) {

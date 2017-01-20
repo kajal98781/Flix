@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by Kajal on 10/16/2016.
  */
-public class ResponseMovieVideo {
+public class ResponseVideo {
 
     /**
      * id : 157336
@@ -29,7 +29,7 @@ public class ResponseMovieVideo {
     @SerializedName("results")
     private List<VideoBean> videoBean;
 
-    public ResponseMovieVideo(int id) {
+    public ResponseVideo(int id) {
         this.id = id;
     }
 
