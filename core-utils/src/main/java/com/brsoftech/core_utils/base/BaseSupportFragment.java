@@ -47,6 +47,7 @@ public class BaseSupportFragment extends Fragment {
 
     public void displayShortToast(@StringRes int stringResId) {
         Toast.makeText(getActivity(), getString(stringResId), Toast.LENGTH_SHORT).show();
+        int i = 0;
     }
 
     public void displayLongToast(@StringRes int stringResId) {
