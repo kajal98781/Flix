@@ -44,6 +44,7 @@ public class SearchMovieAdapter extends RecyclerView.Adapter<SearchMovieAdapter.
                 .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
         holder.tvTitle.setText(mSearchMovieList.get(position).getOriginal_title());
+        holder.tvRate.setText(String.valueOf(mSearchMovieList.get(position).getVote_average()));
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
         try {
@@ -64,13 +65,14 @@ public class SearchMovieAdapter extends RecyclerView.Adapter<SearchMovieAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
-        private TextView tvTitle, tvReleaseDate;
+        private TextView tvTitle, tvReleaseDate, tvRate;
 
         public ViewHolder(View itemView) {
             super(itemView);
             tvTitle = (TextView) itemView.findViewById(R.id.tv_title);
             tvReleaseDate = (TextView) itemView.findViewById(R.id.tv_release_date);
             imageView = (ImageView) itemView.findViewById(R.id.image);
+            tvRate = (TextView) itemView.findViewById(R.id.tv_rating);
 
         }
     }

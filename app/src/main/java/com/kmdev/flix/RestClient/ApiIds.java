@@ -22,6 +22,11 @@ public class ApiIds {
     public static final int ID_TV_AIR_MOVIE_TODAY = 17;
     public static final int ID_ON_TV = 18;
     public static final int ID_SEARCH_PEOPLE = 19;
+    public static final int ID_POPULAR_PEOPLE = 20;
+    public static final int ID_LATEST_PEOPLE = 21;
+    public static final int ID_PEOPLE_DETAILS = 22;
+    public static final int ID_SIMILAR_MOVIES = 23;
+    public static final int ID_SIMILAR_TV_SHOWS = 24;
     public static int ID_TOP_RATED_MOVIES = 2;
 
 

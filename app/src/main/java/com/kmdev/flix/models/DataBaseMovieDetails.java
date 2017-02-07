@@ -10,6 +10,24 @@ public class DataBaseMovieDetails {
     private ResponseTvDetails responseTvDetails;
     private int type;
     private int id;
+    private ResponsePopularMovie responseSimilarMovies;
+    private ResponseTvPopular responseTvSimilarShows;
+
+    public ResponseTvPopular getResponseTvSimilarShows() {
+        return responseTvSimilarShows;
+    }
+
+    public void setResponseTvSimilarShows(ResponseTvPopular responseTvSimilarShows) {
+        this.responseTvSimilarShows = responseTvSimilarShows;
+    }
+
+    public ResponsePopularMovie getResponseSimilarMovies() {
+        return responseSimilarMovies;
+    }
+
+    public void setResponseSimilarMovies(ResponsePopularMovie responseSimilarMovies) {
+        this.responseSimilarMovies = responseSimilarMovies;
+    }
 
     public int getType() {
         return type;

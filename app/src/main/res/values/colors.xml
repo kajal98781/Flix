@@ -10,5 +10,6 @@
     <color name="photo_placeholder">#ccc</color>
     <color name="gradient_start">#dedede</color>
     <color name="colorPrimaryLight">#9c02888d</color>
+    <color name="rating_bg_color">#cb212121</color>
 
 </resources>

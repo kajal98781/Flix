@@ -51,6 +51,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/action_bar_gradient_dark" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -72,27 +73,31 @@
                         android:textColor="@color/color_white"
                         android:textSize="@dimen/text_size_large" />
 
-                    <TextView
-                        android:id="@+id/tv_release_date"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="@dimen/dp_5"
-                        android:text="@string/action_settings"
-                        android:textAppearance="@style/TextAppearance.FontPath.BOLD"
-                        android:textColor="@color/color_white"
-                        android:textSize="@dimen/text_size_medium" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tv_rating"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ic_star_black_24dp"
-                        android:drawablePadding="@dimen/dp_5"
-                        android:paddingTop="@dimen/dp_5"
-                        android:text="@string/action_settings"
-                        android:textAppearance="@style/TextAppearance.FontPath.BOLD"
-                        android:textColor="@color/color_white"
-                        android:textSize="@dimen/text_size_medium" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="@dimen/dp_5"
+                            android:text="@string/popularity"
+                            android:textAppearance="@style/TextAppearance.FontPath.BOLD"
+                            android:textColor="@color/color_white"
+                            android:textSize="@dimen/text_size_medium" />
+
+                        <TextView
+                            android:id="@+id/tv_popularity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/dp_10"
+                            android:paddingTop="@dimen/dp_5"
+                            android:text="@string/popularity"
+                            android:textAppearance="@style/TextAppearance.FontPath.BOLD"
+                            android:textColor="@color/color_white"
+                            android:textSize="@dimen/text_size_medium" />
+                    </LinearLayout>
 
                 </LinearLayout>
             </FrameLayout>
@@ -119,15 +124,7 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_movie_details" />
+    <include layout="@layout/content_people_details" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_favorite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_favorite_border_black_24dp"
-        app:layout_anchor="@id/app_bar"
-        app:layout_anchorGravity="bottom|end" />
 
 </android.support.design.widget.CoordinatorLayout>

@@ -15,6 +15,7 @@ import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.ui.fragments.FavouriteMainFragment;
 import com.kmdev.flix.ui.fragments.HomeFragment;
+import com.kmdev.flix.ui.fragments.PeopleFragment;
 import com.kmdev.flix.utils.Utils;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -60,6 +61,7 @@ public class HomeActivity extends BaseAppCompatActivity implements ApiHitListene
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
 
@@ -111,6 +113,8 @@ public class HomeActivity extends BaseAppCompatActivity implements ApiHitListene
 
         } else if (id == R.id.nav_donate) {
 
+        } else if (id == R.id.nav_people) {
+            setFragmentWithoutBackStack(R.id.home_fragment, PeopleFragment.newInstance(), false);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

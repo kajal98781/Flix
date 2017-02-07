@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiUrls;
-import com.kmdev.flix.models.ResponseMovieDetails;
+import com.kmdev.flix.models.ResponseSearchPeople;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -18,14 +18,14 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by Kajal on 10/23/2016.
+ * Created by Kajal on 2/2/2017.
  */
-public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAdapter.ViewHolder> {
+public class SearchPeopleAdapter extends RecyclerView.Adapter<SearchPeopleAdapter.ViewHolder> {
     private ViewHolder mViewHolder;
-    private List<ResponseMovieDetails> mMovieDetailsList;
+    private List<ResponseSearchPeople.ResultsBean.KnownForBean> mSearchMovieList;
 
-    public FavouriteMovieAdapter(List<ResponseMovieDetails> movieDetailsList) {
-        mMovieDetailsList = movieDetailsList;
+    public SearchPeopleAdapter(List<ResponseSearchPeople.ResultsBean.KnownForBean> searchMovieDetailsList) {
+        mSearchMovieList = searchMovieDetailsList;
     }
 
     @Override
@@ -39,17 +39,16 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Picasso.with(holder.itemView.getContext())
-                .load(ApiUrls.IMAGE_PATH_ULTRA + mMovieDetailsList.get(position).getPoster_path())
+                .load(ApiUrls.IMAGE_PATH_ULTRA + mSearchMovieList.get(position).getPoster_path())
                 .placeholder(R.color.photo_placeholder)   // optional
                 .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
-        holder.tvTitle.setText(mMovieDetailsList.get(position).getOriginal_title());
-        holder.tvRate.setText(String.valueOf(mMovieDetailsList.get(position).getVote_average()));
-
+        holder.tvTitle.setText(mSearchMovieList.get(position).getOriginal_title());
+        holder.tvRate.setText(String.valueOf(mSearchMovieList.get(position).getVote_average()));
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
         try {
-            Date date = simpleDateFormat1.parse(mMovieDetailsList.get(position).getRelease_date());
+            Date date = simpleDateFormat1.parse(mSearchMovieList.get(position).getRelease_date());
             String releaseDate = simpleDateFormat.format(date);
             Date formattedDate = simpleDateFormat.parse(releaseDate);
             holder.tvReleaseDate.setText(simpleDateFormat.format(formattedDate));
@@ -57,15 +56,11 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public int getItemCount() {
-
-
-        return mMovieDetailsList.size();
-
+        return mSearchMovieList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -78,9 +73,9 @@ public class FavouriteMovieAdapter extends RecyclerView.Adapter<FavouriteMovieAd
             tvReleaseDate = (TextView) itemView.findViewById(R.id.tv_release_date);
             imageView = (ImageView) itemView.findViewById(R.id.image);
             tvRate = (TextView) itemView.findViewById(R.id.tv_rating);
-
         }
     }
 
 
 }
+

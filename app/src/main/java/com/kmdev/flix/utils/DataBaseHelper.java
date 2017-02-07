@@ -10,7 +10,9 @@ import com.google.gson.Gson;
 import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
+import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseTvPopular;
 import com.kmdev.flix.models.ResponseVideo;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import java.util.List;
 
 
 public class DataBaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "favouriteManager";
     private static final String TABLE_FAVOURITES = "myFavourites";
     private static final String KEY_FAVOURITE = "favourite";
@@ -27,6 +29,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String KEY_ID = "movieId";
     private static final String KEY_REVIEW = "review";
     private static final String KEY_VIDEO = "video";
+    private static final String KEY_SIMILAR_MOVIES = "similar_movies";
 
     public DataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -38,6 +41,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String CREATE_TABLE_MOVIE = "CREATE TABLE " + TABLE_FAVOURITES + "("
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_FAVOURITE + " TEXT,"
                 + KEY_TYPE + " INTEGER,"
+                + KEY_SIMILAR_MOVIES + " TEXT,"
                 + KEY_REVIEW + " TEXT," + KEY_VIDEO + " TEXT" + ")";
 
 
@@ -62,9 +66,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         if (dataBaseMovieDetails.getType() == 0) {
             values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseMovieDetails())); // Contact Name
             values.put(KEY_TYPE, new Gson().toJson(dataBaseMovieDetails.getType()));
+            values.put(KEY_SIMILAR_MOVIES, new Gson().toJson(dataBaseMovieDetails.getResponseSimilarMovies()));
+
         } else if (dataBaseMovieDetails.getType() == 1) {
             values.put(KEY_FAVOURITE, new Gson().toJson(dataBaseMovieDetails.getResponseTvDetails())); // Contact Name
             values.put(KEY_TYPE, new Gson().toJson(dataBaseMovieDetails.getType()));
+            values.put(KEY_SIMILAR_MOVIES, new Gson().toJson(dataBaseMovieDetails.getResponseTvSimilarShows()));
+
         }
         values.put(KEY_REVIEW, new Gson().toJson(dataBaseMovieDetails.getResponseMovieReview()));
         values.put(KEY_VIDEO, new Gson().toJson(dataBaseMovieDetails.getResponseMovieVideo()));
@@ -151,16 +159,35 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public DataBaseMovieDetails getMovieDetails(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID, KEY_FAVOURITE, KEY_REVIEW,
-                        KEY_VIDEO}, KEY_ID + "=?",
+        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID, KEY_FAVOURITE, KEY_SIMILAR_MOVIES,
+                        KEY_REVIEW, KEY_VIDEO}, KEY_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
         DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
         dataBaseMovieDetails.setId(id);
-        dataBaseMovieDetails.setResponseMovieReview(new Gson().fromJson(cursor.getString(2), ResponseMovieReview.class));
-        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(3), ResponseVideo.class));
+        dataBaseMovieDetails.setResponseSimilarMovies(new Gson().fromJson(cursor.getString(2), ResponsePopularMovie.class));
+        dataBaseMovieDetails.setResponseMovieReview(new Gson().fromJson(cursor.getString(3), ResponseMovieReview.class));
+        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(4), ResponseVideo.class));
         dataBaseMovieDetails.setResponseMovieDetails(new Gson().fromJson(cursor.getString(1), ResponseMovieDetails.class));
+
+        // return contact
+        return dataBaseMovieDetails;
+    }
+
+    public DataBaseMovieDetails getShowDetails(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_FAVOURITES, new String[]{KEY_ID, KEY_FAVOURITE, KEY_SIMILAR_MOVIES,
+                        KEY_REVIEW, KEY_VIDEO}, KEY_ID + "=?",
+                new String[]{String.valueOf(id)}, null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+        DataBaseMovieDetails dataBaseMovieDetails = new DataBaseMovieDetails();
+        dataBaseMovieDetails.setId(id);
+        dataBaseMovieDetails.setResponseTvSimilarShows(new Gson().fromJson(cursor.getString(2), ResponseTvPopular.class));
+        dataBaseMovieDetails.setResponseMovieReview(new Gson().fromJson(cursor.getString(3), ResponseMovieReview.class));
+        dataBaseMovieDetails.setResponseMovieVideo(new Gson().fromJson(cursor.getString(4), ResponseVideo.class));
+        dataBaseMovieDetails.setResponseTvDetails(new Gson().fromJson(cursor.getString(1), ResponseTvDetails.class));
 
         // return contact
         return dataBaseMovieDetails;

@@ -126,6 +126,10 @@ public class ResponsePeople {
             this.popularity = popularity;
         }
 
+        public int getPopularityInt() {
+            return Double.valueOf(popularity).intValue();
+        }
+
         public List<KnownForBean> getKnown_for() {
             return known_for;
         }
@@ -237,6 +241,10 @@ public class ResponsePeople {
 
             public void setPopularity(double popularity) {
                 this.popularity = popularity;
+            }
+
+            public int getPopularityInt() {
+                return Double.valueOf(popularity).intValue();
             }
 
             public int getVote_count() {

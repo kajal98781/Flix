@@ -5,6 +5,7 @@ import android.content.Context;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
+import com.kmdev.flix.models.ResponsePeopleDetails;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
@@ -385,5 +386,108 @@ public class RestClient extends BaseRestClient {
         } else {
             apiHitListener.networkNotAvailable();
         }
+    }
+
+    public void getPopularPeople(int page) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePeople> call = getApi().popularPeople(Constants.API_KEY, "en-US", page);
+            call.enqueue(new Callback<ResponsePeople>() {
+                @Override
+                public void onResponse(Call<ResponsePeople> call, Response<ResponsePeople> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_POPULAR_PEOPLE, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePeople> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_POPULAR_PEOPLE, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+
+    public void getLatestPeople(int mCurrentPage) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePeople> call = getApi().latestPeople(Constants.API_KEY, "en-US", mCurrentPage);
+            call.enqueue(new Callback<ResponsePeople>() {
+                @Override
+                public void onResponse(Call<ResponsePeople> call, Response<ResponsePeople> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_LATEST_PEOPLE, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePeople> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_LATEST_PEOPLE, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+    public void getPeopleDetails(String peopleId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePeopleDetails> call = getApi().peopleDetails(peopleId,
+                    Constants.API_KEY,
+                    "en-US");
+            call.enqueue(new Callback<ResponsePeopleDetails>() {
+                @Override
+                public void onResponse(Call<ResponsePeopleDetails> call, Response<ResponsePeopleDetails> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_PEOPLE_DETAILS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePeopleDetails> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_PEOPLE_DETAILS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void getSimilarMovies(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePopularMovie> call = getApi().similarMovies(mId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponsePopularMovie>() {
+                @Override
+                public void onResponse(Call<ResponsePopularMovie> call, Response<ResponsePopularMovie> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_SIMILAR_MOVIES, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePopularMovie> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_SIMILAR_MOVIES, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+    }
+
+    public void getSimilarTvShows(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseTvPopular> call = getApi().similarTvShows(mId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponseTvPopular>() {
+                @Override
+                public void onResponse(Call<ResponseTvPopular> call, Response<ResponseTvPopular> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_SIMILAR_TV_SHOWS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseTvPopular> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_SIMILAR_TV_SHOWS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+
+
     }
 }

@@ -14,4 +14,5 @@ public class BaseArguments {
     public static final String ARG_QUERY = "query";
     public static final String ARG_TV_ID = "tv_id";
     public static final String ARG_REGION = "region";
+    public static final String ARG_PERSON_ID = "person_id";
 }

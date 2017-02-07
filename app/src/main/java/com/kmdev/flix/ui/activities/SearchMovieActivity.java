@@ -11,7 +11,6 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -28,9 +27,11 @@ import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseSearchMovie;
+import com.kmdev.flix.models.ResponseSearchPeople;
 import com.kmdev.flix.models.ResponseSearchTv;
 import com.kmdev.flix.models.ResponseTvDetails;
 import com.kmdev.flix.ui.adapters.SearchMovieAdapter;
+import com.kmdev.flix.ui.adapters.SearchPeopleAdapter;
 import com.kmdev.flix.ui.adapters.SearchTvAdapter;
 import com.kmdev.flix.ui.fragments.ItemListFragment;
 import com.kmdev.flix.utils.Constants;
@@ -45,14 +46,17 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     private RestClient mRestClient;
     private SearchMovieAdapter mSearchMovieAdapter;
     private SearchTvAdapter mSearchTvAdapter;
+    private SearchPeopleAdapter mSearchPeopleAdapter;
     private RecyclerView mRecyclerSearch;
     private String mQuery;
     private EditText mEtSearch;
     private List<ResponseSearchMovie.ResultsSearchBean> mSearchBeanList;
     private List<ResponseSearchTv.SearchBean> mSearchTvList;
+    private List<ResponseSearchPeople.ResultsBean.KnownForBean> mSearchPeopleList;
     private Toolbar mToolBar;
     private TextView mTvError;
     private String mType;
+    private int mCurrentPage = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         mRestClient = new RestClient(this);
         mSearchBeanList = new ArrayList<>();
         mSearchTvList = new ArrayList<>();
+        mSearchPeopleList = new ArrayList<>();
         if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
             mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
             mSearchMovieAdapter = new SearchMovieAdapter(mSearchBeanList);
@@ -93,6 +98,10 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
             mSearchTvAdapter = new SearchTvAdapter(mSearchTvList);
             mRecyclerSearch.setAdapter(mSearchTvAdapter);
 
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+            mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+            mSearchPeopleAdapter = new SearchPeopleAdapter(mSearchPeopleList);
+            mRecyclerSearch.setAdapter(mSearchTvAdapter);
         }
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(this, R.dimen.spacing);
 
@@ -111,6 +120,8 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                         callSearchMovie(searchQuery);
                     } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                         callSearchTv(searchQuery);
+                    } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+                        callSearchPeople(searchQuery);
                     }
                 } else {
                     new Handler().postDelayed(new Runnable() {
@@ -123,8 +134,11 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                                 mSearchTvList.clear();
                                 mSearchTvAdapter.notifyDataSetChanged();
 
-                            }
+                            } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+                                mSearchPeopleList.clear();
+                                mSearchPeopleAdapter.notifyDataSetChanged();
 
+                            }
 
 
                         }
@@ -156,6 +170,9 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                     } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                         displayLoadingDialog(false);
                         callSearchTv(searchQuery);
+                    } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+                        displayLoadingDialog(false);
+                        callSearchPeople(searchQuery);
                     }
 
                     return true;
@@ -170,13 +187,30 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                     callMovieDetails(position);
                 } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                     callTvDetails(position);
+                } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+                    callPeopleDetails(position);
                 }
+
 
 
             }
         });
 
         //mToolBar.
+    }
+
+    private void callPeopleDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getPeopleDetails(String.valueOf(mSearchPeopleList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
+    }
+
+    private void callSearchPeople(String searchQuery) {
+        mRestClient.callback(this).searchPeoples(searchQuery, mCurrentPage);
+
     }
 
     private void callTvDetails(int position) {
@@ -206,20 +240,20 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         } else {
             displayShortToast(R.string.internet_connection);
         }
-        if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
+        /*if (ConnectionDetector.isNetworkAvailable(SearchMovieActivity.this)) {
             displayLoadingDialog(true);
             mRestClient.callback(this).getMovieDetails(String.valueOf(mSearchBeanList.get(position).getId()));
         } else {
             displayShortToast(R.string.internet_connection);
-        }
+        }*/
 
     }
 
-    @Override
+ /*   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);//Menu Resource, Menu
         return true;
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -227,7 +261,12 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
             case android.R.id.home:
                 onBackPressed();
                 break;
-
+           /* case R.id.action_movies:
+                break;
+            case R.id.action_tv_shows:
+                break;
+            case R.id.action_people:
+                break;*/
         }
         return true;
     }
@@ -261,7 +300,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
                 movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_MOVIES);
                 startActivity(movieDetailIntent);
-                finish();
+                //finish();
             }
         } else if (apiId == ApiIds.ID_SEARCH_TV_SHOWS) {
             ResponseSearchTv resultsSearchBean = (ResponseSearchTv) response;
@@ -286,7 +325,7 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 tvDetailIntent.putExtra(Constants.TYPE_TV_SHOW_DETAILS, res);
                 tvDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_TV_SHOWS);
                 startActivity(tvDetailIntent);
-                finish();
+                // finish();
             }
         }
 

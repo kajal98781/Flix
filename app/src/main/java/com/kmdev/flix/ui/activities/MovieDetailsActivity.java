@@ -27,15 +27,20 @@ import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiHitListener;
 import com.kmdev.flix.RestClient.ApiIds;
 import com.kmdev.flix.RestClient.ApiUrls;
+import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.DataBaseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
+import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseTvDetails;
+import com.kmdev.flix.models.ResponseTvPopular;
 import com.kmdev.flix.models.ResponseVideo;
 import com.kmdev.flix.ui.adapters.ReviewMovieAdapter;
+import com.kmdev.flix.ui.adapters.SimilarMoviesAdapter;
+import com.kmdev.flix.ui.adapters.SimilarShowAdapter;
 import com.kmdev.flix.ui.adapters.VideoMovieAdapter;
 import com.kmdev.flix.ui.fragments.ItemListFragment;
 import com.kmdev.flix.utils.Constants;
@@ -59,7 +64,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private Toolbar mToolbar;
     private ImageView mImageMovieBack;
     private TextView mTvDescription, mTvMovieTitle, mTvReleaseDate, mTvReviews, mTvVideos;
-    private RecyclerView mRecyclerViewReview, mRecyclerViewVideos, getmRecyclerViewRecommends;
+    private RecyclerView mRecyclerViewReview, mRecyclerViewVideos, mRecyclerSimilarMovies;
     private ReviewMovieAdapter mReviewAdapter;
     private VideoMovieAdapter mVideoMovieAdapter;
     private List<ResponseMovieReview.ReviewBean> mReviewBeanList;
@@ -67,7 +72,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private String mImageUrl;
     private CollapsingToolbarLayout mCollapsingToolbarLayout;
     private AppBarLayout mAppBarLayout;
-    private ProgressBar mProgressBar, mProgressBarVideo, mProgressBarReview, mProgressBarDetail;
+    private ProgressBar mProgressBar, mProgressBarVideo, mProgressBarReview, mProgressBarSimilarMovies;
     private TextView mTvLoadingVideo, mTvLoadReview, mTvLoadDetails;
     private FloatingActionButton mFabFavourite;
     private boolean mIsNotFav;
@@ -77,11 +82,19 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private ResponseMovieReview mResponseMovieReview;
     private ResponseVideo mResponseMovieVideo;
     private boolean mIsLoadingReview = false;
+    private boolean mIsLoadingSimilarMovies = false;
     private boolean mIsLoadingTrailers = false;
-    private TextView mTvTitleToolbar, mTvReview;
+    private TextView mTvTitleToolbar, mTvReview, mTvRating, mTvLoadingSimilarMovies, mTvSimilar;
     private ResponseTvDetails mResponseTvDetails;
     private ResponseRecommendations mResponseRecommendations;
     private FrameLayout mFrameReview;
+    private ResponsePopularMovie mResponseSimilarMovies;
+    private ResponseTvPopular mResponseSimilarShows;
+    private List<ResponsePopularMovie.PopularMovie> mSimilarMoviesList;
+    private SimilarMoviesAdapter mSimilarMovieAdapter;
+    private SimilarShowAdapter mSimilarShowAdapter;
+    private List<ResponseTvPopular.ResultsBean> mSimilarShowsList;
+    private TextView mTvSimilarTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,28 +118,36 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mImageMovieBack = (ImageView) findViewById(R.id.imageMovieBack);
         mTvDescription = (TextView) findViewById(R.id.tv_description);
         mRecyclerViewReview = (RecyclerView) findViewById(R.id.recycler_review);
+        mRecyclerSimilarMovies = (RecyclerView) findViewById(R.id.recycler_similar_movies);
         mRecyclerViewVideos = (RecyclerView) findViewById(R.id.recycler_videos);
         mCollapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         mTvMovieTitle = (TextView) findViewById(R.id.tv_title);
         mTvReleaseDate = (TextView) findViewById(R.id.tv_release_date);
         mTvReviews = (TextView) findViewById(R.id.tv_reviews);
+        mTvSimilar = (TextView) findViewById(R.id.tv_similar_movies);
         mTvVideos = (TextView) findViewById(R.id.tv_videos);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mProgressBarVideo = (ProgressBar) findViewById(R.id.progress_bar_video);
         mProgressBarReview = (ProgressBar) findViewById(R.id.progress_bar_review);
+        mProgressBarSimilarMovies = (ProgressBar) findViewById(R.id.progress_bar_movies);
         mTvLoadReview = (TextView) findViewById(R.id.tv_loading_review);
         mTvLoadingVideo = (TextView) findViewById(R.id.tv_loading_video);
+        mTvLoadingSimilarMovies = (TextView) findViewById(R.id.tv_loading_movies);
         mTvTitleToolbar = (TextView) findViewById(R.id.tv_title_toolbar);
         mFabFavourite = (FloatingActionButton) findViewById(R.id.fab_favorite);
         mTvReview = (TextView) findViewById(R.id.tv_review);
         mFrameReview = (FrameLayout) findViewById(R.id.frame_review);
+        mTvRating = (TextView) findViewById(R.id.tv_rating);
+        mTvSimilarTxt = (TextView) findViewById(R.id.tv_similar);
     }
 
     private void init(Bundle savedInstanceState) {
         mReviewBeanList = new ArrayList<>();
+        mSimilarShowsList = new ArrayList<>();
         mDatabase = new DataBaseHelper(this);
         mVideoBeanList = new ArrayList<>();
+        mSimilarMoviesList = new ArrayList<>();
         mImageMovieBack.setOnClickListener(this);
         mFabFavourite.setOnClickListener(this);
         setSupportActionBar(mToolbar);
@@ -142,7 +163,9 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         boolean isComeFromFavourites = getIntent().getBooleanExtra(Constants.TYPE_IS_FAVOURITE, false);
         if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
             mTvReview.setVisibility(View.GONE);
+            mTvSimilarTxt.setText(getString(R.string.similar_tv_shows));
             mRecyclerViewReview.setVisibility(View.GONE);
+            //  mRecyclerSimilarMovies.setVisibility(View.GONE);
             mFrameReview.setVisibility(View.GONE);
         }
 
@@ -151,6 +174,23 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mReviewAdapter = new ReviewMovieAdapter(mReviewBeanList);
         mRecyclerViewReview.setAdapter(mReviewAdapter);
         mRecyclerViewReview.setNestedScrollingEnabled(false);
+
+        //set similar movies adapter
+        if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
+            mTvSimilarTxt.setText(getString(R.string.similar_movies));
+
+            mRecyclerSimilarMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            mSimilarMovieAdapter = new SimilarMoviesAdapter(mSimilarMoviesList);
+            mRecyclerSimilarMovies.setAdapter(mSimilarMovieAdapter);
+            mRecyclerSimilarMovies.setNestedScrollingEnabled(false);
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+            mRecyclerSimilarMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            mSimilarShowAdapter = new SimilarShowAdapter(mSimilarShowsList);
+            mRecyclerSimilarMovies.setAdapter(mSimilarShowAdapter);
+            mRecyclerSimilarMovies.setNestedScrollingEnabled(false);
+
+        }
+
 
         //set video adapter
         mRecyclerViewVideos.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -166,6 +206,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     mTvDescription.setText(mResponseMovieDetails.getOverview());
                     mTitle = mResponseMovieDetails.getTitle();
                     mImageUrl = mResponseMovieDetails.getPoster_path();
+                    mTvRating.setText(String.valueOf(mResponseMovieDetails.getVote_average()));
                     Picasso.with(this)
                             .load(ApiUrls.IMAGE_PATH_VERY_HIGH + mResponseMovieDetails.getBackdrop_path())
                             .into(mImageMovieBack);
@@ -194,20 +235,24 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 mTvDescription.setText(mResponseTvDetails.getOverview());
                 mTitle = mResponseTvDetails.getName();
                 mImageUrl = mResponseTvDetails.getPoster_path();
+                mTvRating.setText(String.valueOf(mResponseTvDetails.getVote_average()));
+
                 Picasso.with(this)
                         .load(ApiUrls.IMAGE_PATH_HIGH + mResponseTvDetails.getBackdrop_path())
                         .into(mImageMovieBack);
                 mTvMovieTitle.setText(mResponseTvDetails.getOriginal_name());
                 SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
-                try {
-                    Date date = simpleDateFormat1.parse(mResponseTvDetails.getFirst_air_date());
-                    String releaseDate = simpleDateFormat.format(date);
-                    Date formattedDate = simpleDateFormat.parse(releaseDate);
-                    mTvReleaseDate.setText(simpleDateFormat.format(formattedDate));
+                if (!TextUtils.isEmpty(mResponseTvDetails.getFirst_air_date())) {
+                    try {
+                        Date date = simpleDateFormat1.parse(mResponseTvDetails.getFirst_air_date());
+                        String releaseDate = simpleDateFormat.format(date);
+                        Date formattedDate = simpleDateFormat.parse(releaseDate);
+                        mTvReleaseDate.setText(simpleDateFormat.format(formattedDate));
 
-                } catch (ParseException e) {
-                    e.printStackTrace();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -224,6 +269,20 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     }
                 });
         //video click listener
+        ItemClickSupport.addTo(mRecyclerSimilarMovies)
+                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+
+                        if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
+                            callTvShowDetails(position);
+                        } else {
+                            callMovieDetails(position);
+
+                        }
+                    }
+                });
+        //similar movie listener
         ItemClickSupport.addTo(mRecyclerViewVideos)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                     @Override
@@ -289,6 +348,21 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                         mRecyclerViewVideos.setVisibility(View.GONE);
                     }
                 }
+                //get similar movie from database
+                ResponsePopularMovie responseSimilarMovies = dataBaseMovieDetails.getResponseSimilarMovies();
+                if (responseSimilarMovies != null) {
+                    List<ResponsePopularMovie.PopularMovie> similarMovieList = responseSimilarMovies.getPopularMovie();
+                    if (similarMovieList.size() > 0) {
+                        mSimilarMoviesList.clear();
+                        mSimilarMoviesList.addAll(similarMovieList);
+                        if (mSimilarMovieAdapter != null) {
+                            mSimilarMovieAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvSimilar.setVisibility(View.VISIBLE);
+                        mRecyclerSimilarMovies.setVisibility(View.GONE);
+                    }
+                }
             } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                 DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mId));
                 ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
@@ -320,6 +394,22 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                         mRecyclerViewVideos.setVisibility(View.GONE);
                     }
                 }
+                //get similar tv shows from database
+                ResponseTvPopular responseTvShow = dataBaseMovieDetails.getResponseTvSimilarShows();
+                if (responseTvShow != null) {
+                    List<ResponseTvPopular.ResultsBean> similarShowList = responseTvShow.getResults();
+                    if (similarShowList.size() > 0) {
+                        mSimilarShowsList.clear();
+                        mSimilarShowsList.addAll(similarShowList);
+                        if (mSimilarShowAdapter != null) {
+                            mSimilarShowAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvSimilar.setVisibility(View.VISIBLE);
+                        mRecyclerSimilarMovies.setVisibility(View.GONE);
+                    }
+                }
+
 
             }
 
@@ -328,16 +418,22 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             if (!TextUtils.isEmpty(mId)) {
                 mIsLoadingReview = true;
                 mIsLoadingTrailers = true;
+                mIsLoadingSimilarMovies = true;
                 mProgressBarReview.setVisibility(View.VISIBLE);
                 mTvLoadReview.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getReviews(mId);
                 mProgressBarVideo.setVisibility(View.VISIBLE);
                 mTvLoadingVideo.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getVideos(mId);
+                mTvLoadingSimilarMovies.setVisibility(View.VISIBLE);
+                mProgressBarSimilarMovies.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getSimilarMovies(mId);
+
             }
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
             if (!TextUtils.isEmpty(mId)) {
                 mIsLoadingReview = true;
+                mIsLoadingSimilarMovies = true;
                 mIsLoadingTrailers = true;
                 mProgressBarReview.setVisibility(View.VISIBLE);
                 mTvLoadReview.setVisibility(View.VISIBLE);
@@ -345,9 +441,14 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 mProgressBarVideo.setVisibility(View.VISIBLE);
                 mTvLoadingVideo.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getTvVideos(mId);
+                mTvLoadingSimilarMovies.setVisibility(View.VISIBLE);
+                mProgressBarSimilarMovies.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getSimilarTvShows(mId);
+
             }
         }
     }
+
 
     private void hideToolbarContents() {
         if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
@@ -359,6 +460,25 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
         }
 
+
+    }
+
+    private void callTvShowDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getTvShowDetails(String.valueOf(mSimilarShowsList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
+    }
+
+    private void callMovieDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getMovieDetails(String.valueOf(mSimilarMoviesList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
 
     }
 
@@ -461,10 +581,69 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     mRecyclerViewReview.setVisibility(View.GONE);
                 }
             }
+        } else if (apiId == ApiIds.ID_SIMILAR_MOVIES) {
+            mIsLoadingSimilarMovies = false;
+            mProgressBarSimilarMovies.setVisibility(View.GONE);
+            mTvLoadingSimilarMovies.setVisibility(View.GONE);
+            mResponseSimilarMovies = (ResponsePopularMovie) response;
+            if (mResponseSimilarMovies != null) {
+                List<ResponsePopularMovie.PopularMovie> similarMoviesList = mResponseSimilarMovies.getPopularMovie();
+                if (similarMoviesList.size() > 0) {
+                    mSimilarMoviesList.clear();
+                    mSimilarMoviesList.addAll(similarMoviesList);
+                    if (mSimilarMovieAdapter != null) {
+                        mSimilarMovieAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    mTvSimilar.setVisibility(View.VISIBLE);
+                    mRecyclerSimilarMovies.setVisibility(View.GONE);
+                }
+            }
+
+        } else if (apiId == ApiIds.ID_SIMILAR_TV_SHOWS) {
+            mIsLoadingSimilarMovies = false;
+            mProgressBarSimilarMovies.setVisibility(View.GONE);
+            mTvLoadingSimilarMovies.setVisibility(View.GONE);
+            mResponseSimilarShows = (ResponseTvPopular) response;
+            if (mResponseSimilarShows != null) {
+                List<ResponseTvPopular.ResultsBean> similarShowList = mResponseSimilarShows.getResults();
+                if (similarShowList.size() > 0) {
+                    mSimilarShowsList.clear();
+                    mSimilarShowsList.addAll(similarShowList);
+                    mRecyclerSimilarMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                    mSimilarShowAdapter = new SimilarShowAdapter(mSimilarShowsList);
+                    mRecyclerSimilarMovies.setAdapter(mSimilarShowAdapter);
+                    mRecyclerSimilarMovies.setNestedScrollingEnabled(false);
+
+                }
+            } else {
+                mTvSimilar.setVisibility(View.VISIBLE);
+                mRecyclerSimilarMovies.setVisibility(View.GONE);
+            }
+        } else if (apiId == ApiIds.ID_MOVIE_DETAILS) {
+            ResponseMovieDetails responseMovieDetails = (ResponseMovieDetails) response;
+            String res = new Gson().toJson(responseMovieDetails);
+            if (responseMovieDetails != null) {
+
+                Intent movieDetailIntent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
+                movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_MOVIES);
+                movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
+                startActivity(movieDetailIntent);
+            }
+        } else if (apiId == ApiIds.ID_TV_DETAILS) {
+            ResponseTvDetails responseTvDetails = (ResponseTvDetails) response;
+            String res = new Gson().toJson(responseTvDetails);
+            if (responseTvDetails != null) {
+                Intent movieDetailIntent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
+                movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_TV_SHOWS);
+                movieDetailIntent.putExtra(Constants.TYPE_TV_SHOW_DETAILS, res);
+                startActivity(movieDetailIntent);
+            }
         }
 
 
     }
+
 
     @Override
     public void onFailResponse(int apiId, String error) {
@@ -487,7 +666,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab_favorite:
-                if (!mIsLoadingReview && !mIsLoadingTrailers) {
+                if (!mIsLoadingReview && !mIsLoadingTrailers && !mIsLoadingSimilarMovies) {
                     if (mIsNotFav) {
                         addToFavourites();
                         mFabFavourite.setImageResource(R.drawable.ic_favorite_black_24dp);
@@ -559,6 +738,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
             dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
             dataBaseMovieDetails.setId(mResponseMovieDetails.getId());
+            dataBaseMovieDetails.setResponseSimilarMovies(mResponseSimilarMovies);
             mDatabase.addMovies(dataBaseMovieDetails);
 
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
@@ -567,7 +747,9 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             dataBaseMovieDetails.setType(1);
             dataBaseMovieDetails.setResponseMovieReview(mResponseMovieReview);
             dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
+            dataBaseMovieDetails.setResponseTvSimilarShows(mResponseSimilarShows);
             dataBaseMovieDetails.setId(mResponseTvDetails.getId());
+
             mDatabase.addMovies(dataBaseMovieDetails);
         }
     }

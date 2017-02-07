@@ -77,8 +77,8 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="clear_favourite">Are you sure want to clear favourites?</string>
-    <string name="titile_clear_fav">Clear Favourites</string>
+    <string name="clear_favourite">Clear entire cache powering offline state of this application including existing database.Are you sure want to clear favourites?</string>
+    <string name="titile_clear_fav">Clear cache</string>
     <string name="title_about">About</string>
     <string name="title_version">Version</string>
     <string name="title_licence">Licence</string>
@@ -105,4 +105,13 @@
     <string name="add_to_favourites_tv">This show is added successfully to your favourite shows list</string>
     <string name="remove_to_fav_show">Show is removed successfully from your wishlist.</string>
     <string name="latest">Latest</string>
+    <string name="people">People</string>
+    <string name="desc_clear_fav">Clear entire cache powering offline state of this application.</string>
+    <string name="similar_movies">Similar Movies</string>
+    <string name="no_similar_movies_available">No similar movies available.</string>
+    <string name="title_activity_people_details">PeopleDetailsActivity</string>
+    <string name="popularity">Popularity</string>
+    <string name="tv_known_for">Known For</string>
+    <string name="biography">Biography</string>
+    <string name="similar_tv_shows">Similar TV Shows</string>
 </resources>

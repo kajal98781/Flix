@@ -3,6 +3,7 @@ package com.kmdev.flix.retrofilt;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
+import com.kmdev.flix.models.ResponsePeopleDetails;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
@@ -115,6 +116,32 @@ public interface Rest {
                                        @Query(BaseArguments.ARG_QUERY) String searchQuery,
                                        @Query(BaseArguments.ARG_PAGE) int page,
                                        @Query(BaseArguments.ARG_REGION) String in);
+
+    @GET("person/popular")
+    Call<ResponsePeople> popularPeople(@Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                       @Query(BaseArguments.ARG_LANGUAGE) String s,
+                                       @Query(BaseArguments.ARG_PAGE) int page);
+
+    @GET("person/latest")
+    Call<ResponsePeople> latestPeople(String apiKey, String s, int mCurrentPage);
+
+    @GET("person/" + "{person_id}")
+    Call<ResponsePeopleDetails> peopleDetails(@Path(BaseArguments.ARG_PERSON_ID) String peopleId,
+                                              @Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                              @Query(BaseArguments.ARG_LANGUAGE) String s);
+
+    @GET("movie/" + "{movie_id}" + "/similar")
+    Call<ResponsePopularMovie> similarMovies(@Path(BaseArguments.ARG_MOVIE_ID) String mId,
+                                             @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+    @GET("tv/" + "{tv_id}" + "/similar")
+    Call<ResponseTvPopular> similarTvShows(@Path(BaseArguments.ARG_TV_ID) String mId,
+                                           @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+
+
+
+
 
 
 

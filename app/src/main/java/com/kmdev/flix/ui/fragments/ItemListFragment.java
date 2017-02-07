@@ -49,6 +49,7 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
     public static final String ARG_MOVIES = "movies";
     public static final String ARG_TV_SHOWS = "tv_shows";
     public static final String ARG_TYPE = "type";
+    public static final String ARG_PEOPLE = "people";
     private RestClient mRestClient;
     private RecyclerView mRecyclerPopularMovie;
     private HomeMoviesAdapter mHomeMoviesAdapter;
@@ -256,22 +257,22 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
         } else if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_TV_SHOWS))
 
         {
-            if (TextUtils.equals(tvMenuValue, getString(R.string.top_rated))) {
+            if (TextUtils.equals(tvMenuValue, getString(R.string.top_rated) + getString(R.string.tv_shows))) {
                 mRestClient.callback(this).getTvTopRated(mCurrentPage);
                 AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_TV_MENU_VALUE, getString(R.string.top_rated)
                         + getString(R.string.tv_shows));
 
-            } else if (TextUtils.equals(tvMenuValue, getString(R.string.popular))) {
+            } else if (TextUtils.equals(tvMenuValue, getString(R.string.popular) + getString(R.string.tv_shows))) {
                 mRestClient.callback(this).getTvPopularShows(mCurrentPage);
                 AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_TV_MENU_VALUE,
                         getString(R.string.popular) + getString(R.string.tv_shows));
 
-            } else if (TextUtils.equals(tvMenuValue, getString(R.string.on_tv))) {
+            } else if (TextUtils.equals(tvMenuValue, getString(R.string.on_tv) + getString(R.string.tv_shows))) {
                 mRestClient.callback(this).getOnTvMovies(mCurrentPage);
                 AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_TV_MENU_VALUE,
                         getString(R.string.on_tv) + getString(R.string.tv_shows));
 
-            } else if (TextUtils.equals(tvMenuValue, getString(R.string.airing_today))) {
+            } else if (TextUtils.equals(tvMenuValue, getString(R.string.airing_today) + getString(R.string.tv_shows))) {
                 mRestClient.callback(this).getAiringMoviesToday(mCurrentPage);
                 AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_TV_MENU_VALUE,
                         getString(R.string.airing_today) + getString(R.string.tv_shows));
@@ -438,16 +439,21 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
         String menu_value = AppPrefs.getStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_MENU_VALUE);
         String tvMenuValue = AppPrefs.getStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_TV_MENU_VALUE);
 
-
-        for (int i = 0; i < menu.size(); i++) {
-            if (menu.getItem(i).getTitle().equals(menu_value)) {
-                menu.getItem(i).setChecked(true);
+        if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_MOVIES)) {
+            for (int i = 0; i < menu.size(); i++) {
+                if (menu.getItem(i).getTitle().equals(menu_value)) {
+                    menu.getItem(i).setChecked(true);
+                }
             }
-            String title = menu.getItem(i).getTitle() + getString(R.string.tv_shows);
-            if (title.equals(tvMenuValue)) {
-                menu.getItem(i).setChecked(true);
+        } else {
+            for (int i = 0; i < menu.size(); i++) {
+                String title = menu.getItem(i).getTitle() + getString(R.string.tv_shows);
+                if (title.equals(tvMenuValue)) {
+                    menu.getItem(i).setChecked(true);
+                }
             }
         }
+
 
     }
 

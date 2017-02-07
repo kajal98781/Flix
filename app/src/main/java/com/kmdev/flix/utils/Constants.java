@@ -13,4 +13,6 @@ public class Constants {
     public static final String MOVIE_RELEASE_DATE = "release_date";
     public static final String TYPE_IS_FAVOURITE = "isFavourite";
     public static final String TYPE_TV_SHOW_DETAILS = "tv_show_details";
+    public static final String TYPE_PEOPLE_DETAILS = "people_details";
+    public static final String TYPE_KNOWN_FOR = "known_for";
 }

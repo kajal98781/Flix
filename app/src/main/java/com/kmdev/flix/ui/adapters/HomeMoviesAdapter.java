@@ -77,6 +77,7 @@ public class HomeMoviesAdapter extends RecyclerView.Adapter<ViewHolder> {
                 .error(R.color.photo_placeholder)      // optional
                 .into(holder.imageView);
         holder.tvTitle.setText(mPopularMovieList.get(position).getOriginal_title());
+        holder.tvRate.setText(String.valueOf(mPopularMovieList.get(position).getVote_average()));
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-mm-dd");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM, yyyy");
         try {
@@ -149,13 +150,14 @@ public class HomeMoviesAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
-        private TextView tvTitle, tvReleaseDate;
+        private TextView tvTitle, tvReleaseDate, tvRate;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             tvTitle = (TextView) itemView.findViewById(R.id.tv_title);
             tvReleaseDate = (TextView) itemView.findViewById(R.id.tv_release_date);
             imageView = (ImageView) itemView.findViewById(R.id.image);
+            tvRate = (TextView) itemView.findViewById(R.id.tv_rating);
 
         }
     }
