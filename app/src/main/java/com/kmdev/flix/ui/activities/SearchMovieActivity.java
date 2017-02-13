@@ -26,8 +26,9 @@ import com.kmdev.flix.RestClient.ApiIds;
 import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponseMovieDetails;
+import com.kmdev.flix.models.ResponsePeople;
+import com.kmdev.flix.models.ResponsePeopleDetails;
 import com.kmdev.flix.models.ResponseSearchMovie;
-import com.kmdev.flix.models.ResponseSearchPeople;
 import com.kmdev.flix.models.ResponseSearchTv;
 import com.kmdev.flix.models.ResponseTvDetails;
 import com.kmdev.flix.ui.adapters.SearchMovieAdapter;
@@ -52,11 +53,13 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
     private EditText mEtSearch;
     private List<ResponseSearchMovie.ResultsSearchBean> mSearchBeanList;
     private List<ResponseSearchTv.SearchBean> mSearchTvList;
-    private List<ResponseSearchPeople.ResultsBean.KnownForBean> mSearchPeopleList;
     private Toolbar mToolBar;
     private TextView mTvError;
     private String mType;
     private int mCurrentPage = 1;
+    private ResponsePeople mResponsePeople;
+    private List<ResponsePeople.ResultsBean.KnownForBean> mKnowPeopleList;
+    private List<ResponsePeople.ResultsBean> mSearchPeopleList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,24 +87,26 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setElevation(4);
         mType = getIntent().getStringExtra(ItemListFragment.ARG_TYPE);
-
+        mKnowPeopleList = new ArrayList<>();
+        mSearchPeopleList = new ArrayList<>();
         mRestClient = new RestClient(this);
         mSearchBeanList = new ArrayList<>();
         mSearchTvList = new ArrayList<>();
-        mSearchPeopleList = new ArrayList<>();
         if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
             mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
             mSearchMovieAdapter = new SearchMovieAdapter(mSearchBeanList);
             mRecyclerSearch.setAdapter(mSearchMovieAdapter);
+            mEtSearch.setHint(R.string.search_movies);
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
             mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
             mSearchTvAdapter = new SearchTvAdapter(mSearchTvList);
             mRecyclerSearch.setAdapter(mSearchTvAdapter);
-
+            mEtSearch.setHint(R.string.search_tv_shows);
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
             mRecyclerSearch.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
             mSearchPeopleAdapter = new SearchPeopleAdapter(mSearchPeopleList);
-            mRecyclerSearch.setAdapter(mSearchTvAdapter);
+            mRecyclerSearch.setAdapter(mSearchPeopleAdapter);
+            mEtSearch.setHint(R.string.search_people);
         }
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(this, R.dimen.spacing);
 
@@ -326,6 +331,49 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
                 tvDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_TV_SHOWS);
                 startActivity(tvDetailIntent);
                 // finish();
+            }
+        } else if (apiId == ApiIds.ID_SEARCH_PEOPLE) {
+            /* ResponseSearchPeople responseSearchPeople = (ResponseSearchPeople) response;
+            String res = new Gson().toJson(responseSearchPeople);
+            String resKnown = new Gson().toJson(mResponsePeople);
+
+            if (responseSearchPeople != null) {
+
+                Intent peopleDetailIntent = new Intent(this, PeopleDetailsActivity.class);
+                peopleDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
+                peopleDetailIntent.putExtra(Constants.TYPE_KNOWN_FOR, resKnown);
+                startActivity(peopleDetailIntent);
+                // finish();
+            }*/
+            mResponsePeople = (ResponsePeople) response;
+            if (mResponsePeople != null) {
+                List<ResponsePeople.ResultsBean> popularPeople = mResponsePeople.getResults();
+                for (int i = 0; i < popularPeople.size(); i++) {
+                    mKnowPeopleList = popularPeople.get(i).getKnown_for();
+                }
+                if (popularPeople != null && popularPeople.size() > 0) {
+                    mSearchPeopleList.clear();
+                    //   mIsClearDataSet = false;
+
+                    mSearchPeopleList.addAll(popularPeople);
+                    if (mSearchPeopleAdapter != null) {
+                        mSearchPeopleAdapter.notifyDataSetChanged();
+                        // mIsLoadingNewItems = false;
+
+                    }
+                }
+            }
+
+        } else if (apiId == ApiIds.ID_PEOPLE_DETAILS) {
+            ResponsePeopleDetails responsePeopleDetails = (ResponsePeopleDetails) response;
+            String res = new Gson().toJson(responsePeopleDetails);
+
+            if (responsePeopleDetails != null) {
+                Intent peopleDetailIntent = new Intent(getApplicationContext(), PeopleDetailsActivity.class);
+                peopleDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
+                startActivity(peopleDetailIntent);
+
+
             }
         }
 

@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/dp_16dp"
+            android:layout_margin="@dimen/dp_10"
             android:text="@string/biography"
             android:textAppearance="@style/TextAppearance.FontPath.BOLD"
             android:textColor="@color/black"
@@ -77,7 +77,7 @@
                 android:layout_margin="@dimen/text_margin" />
 
             <TextView
-                android:id="@+id/tv_reviews"
+                android:id="@+id/tv_known"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/text_margin"

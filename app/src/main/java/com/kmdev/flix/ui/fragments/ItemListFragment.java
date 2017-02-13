@@ -581,7 +581,7 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
                 break;
 
         }
-        return true;
+        return super.onOptionsItemSelected(item);
 
     }
 

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,7 +25,6 @@ import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePeopleDetails;
-import com.kmdev.flix.prefrences.AppPrefs;
 import com.kmdev.flix.ui.activities.PeopleDetailsActivity;
 import com.kmdev.flix.ui.activities.SearchMovieActivity;
 import com.kmdev.flix.ui.adapters.PeopleAdapter;
@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Created by Kajal on 1/22/2017.
  */
-public class PeopleFragment extends BaseSupportFragment implements ApiHitListener {
+public class PeopleFragment extends BaseSupportFragment implements ApiHitListener, PeopleAdapter.OnRetryListener {
     private RestClient mRestClient;
     private RecyclerView mRecyclerViewPeople;
     private PeopleAdapter mPeopleAdapter;
@@ -51,6 +51,8 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     private SelectedMenu mCurrentState = SelectedMenu.IDLE;
     private boolean mIsClearDataSet = false;
     private ResponsePeople mResponsePeople;
+    private int mPastVisibleItems, mVisibleItemCount, mTotalItemCount;
+    private boolean mIsLoadingNewItems = false;
 
     public static PeopleFragment newInstance() {
 
@@ -65,7 +67,6 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
     }
 
     @Nullable
@@ -98,7 +99,22 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
         mRecyclerViewPeople.setAdapter(mPeopleAdapter);
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getActivity(), R.dimen.spacing);
         mRecyclerViewPeople.addItemDecoration(itemDecoration);
+        mRecyclerViewPeople.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
 
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                //  mTvErrorShow.setVisibility(View.GONE);
+                onScrollLoadMovies();
+
+
+            }
+
+        });
         ItemClickSupport.addTo(mRecyclerViewPeople)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                     @Override
@@ -106,6 +122,42 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
                         callPeopleDetails(position);
                     }
                 });
+
+    }
+
+    private void onScrollLoadMovies() {
+        StaggeredGridLayoutManager linearLayoutManager = (StaggeredGridLayoutManager) mRecyclerViewPeople.getLayoutManager();
+        // check if loading view (last item on our list) is visible
+        mVisibleItemCount = linearLayoutManager.getChildCount();
+        mTotalItemCount = linearLayoutManager.getItemCount();
+        int[] firstVisibleItems = null;
+        firstVisibleItems = linearLayoutManager.findFirstVisibleItemPositions(firstVisibleItems);
+        if (firstVisibleItems != null && firstVisibleItems.length > 0) {
+            mPastVisibleItems = firstVisibleItems[0];
+        }
+
+        if ((mVisibleItemCount + mPastVisibleItems) >= mTotalItemCount) {
+            mCurrentPage++;
+            callPeoples();
+            Log.d("tag", "LOAD NEXT ITEM");
+
+        }
+    }
+
+    private void callPeoples() {
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            if (mCurrentPage == 1) {
+                mIsLoadingNewItems = false;
+            } else {
+                if (!mIsLoadingNewItems) {
+                    mIsLoadingNewItems = true;
+                    //callToGetPopularPeople();
+                    mRestClient.callback(this).getPopularPeople(mCurrentPage);
+
+                }
+            }
+        }
+
 
     }
 
@@ -129,66 +181,39 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
         menu.clear();
         inflater.inflate(R.menu.people_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
-
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_popular:
-                if (mCurrentState != SelectedMenu.POPULAR_PEOPLE) {
-                    item.setChecked(true);
-                    displayLoadingDialog(false);
-                    mIsClearDataSet = true;
-                    mCurrentPage = 1;
-                    AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_MENU_VALUE, getString(R.string.popular));
-                    mRestClient.callback(this).getPopularPeople(mCurrentPage);
-                    mCurrentState = SelectedMenu.POPULAR_PEOPLE;
-                }
-                break;
-            case R.id.action_latest:
-                if (mCurrentState != SelectedMenu.LATEST_PEOPLE) {
-                    item.setChecked(true);
-                    displayLoadingDialog(false);
-                    mIsClearDataSet = true;
-                    mCurrentPage = 1;
-                    AppPrefs.setStringKeyvaluePrefs(getActivity(), AppPrefs.KEY_MENU_VALUE, getString(R.string.latest));
-                    mRestClient.callback(this).getLatestPeople(mCurrentPage);
-                    mCurrentState = SelectedMenu.LATEST_PEOPLE;
-                }
-                break;
-            case R.id.action_search:
+            case R.id.action_search_people:
                 Intent movieIntent = new Intent(getActivity(), SearchMovieActivity.class);
                 movieIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_PEOPLE);
                 startActivity(movieIntent);
-
-                break;
         }
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onSuccessResponse(int apiId, Object response) {
         mProgressBar.setVisibility(View.GONE);
         mTvLoading.setVisibility(View.GONE);
+        dismissLoadingDialog();
 //        mTvErrorShow.setVisibility(View.GONE);
 
         if (apiId == ApiIds.ID_POPULAR_PEOPLE) {
             mResponsePeople = (ResponsePeople) response;
             if (mResponsePeople != null) {
+                mKnowPeopleList.clear();
                 List<ResponsePeople.ResultsBean> popularPeople = mResponsePeople.getResults();
                 for (int i = 0; i < popularPeople.size(); i++) {
                     mKnowPeopleList = popularPeople.get(i).getKnown_for();
                 }
                 if (popularPeople != null && popularPeople.size() > 0) {
-                    mPopularPeopleList.clear();
-                    //   mIsClearDataSet = false;
-
                     mPopularPeopleList.addAll(popularPeople);
                     if (mPeopleAdapter != null) {
                         mPeopleAdapter.notifyDataSetChanged();
-                        // mIsLoadingNewItems = false;
-
+                        mIsLoadingNewItems = false;
                     }
                 }
             }
@@ -201,7 +226,6 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
 
                 Intent peopleDetailIntent = new Intent(getActivity(), PeopleDetailsActivity.class);
                 peopleDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
-                peopleDetailIntent.putExtra(Constants.TYPE_KNOWN_FOR, resKnown);
                 startActivity(peopleDetailIntent);
             }
 
@@ -219,6 +243,12 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     @Override
     public void networkNotAvailable() {
         mTvNoInernet.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void onRetry() {
+        onScrollLoadMovies();
 
     }
 }

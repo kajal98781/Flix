@@ -134,6 +134,10 @@ public class ResponseSearchPeople {
             this.known_for = known_for;
         }
 
+        public int getPopularityInt() {
+            return Double.valueOf(popularity).intValue();
+        }
+
         public static class KnownForBean {
             private String poster_path;
             private boolean adult;

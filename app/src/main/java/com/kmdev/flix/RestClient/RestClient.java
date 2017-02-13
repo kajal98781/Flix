@@ -6,6 +6,7 @@ import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePeopleDetails;
+import com.kmdev.flix.models.ResponsePersonMovie;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
@@ -488,6 +489,27 @@ public class RestClient extends BaseRestClient {
             apiHitListener.networkNotAvailable();
         }
 
+
+    }
+
+
+    public void getPeopleMovieCredits(int id) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponsePersonMovie> call = getApi().personMovieCredits(id, Constants.API_KEY, "en");
+            call.enqueue(new Callback<ResponsePersonMovie>() {
+                @Override
+                public void onResponse(Call<ResponsePersonMovie> call, Response<ResponsePersonMovie> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_PEOPLE_MOVIE_CREDITS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePersonMovie> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_PEOPLE_MOVIE_CREDITS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
 
     }
 }

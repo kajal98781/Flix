@@ -4,6 +4,7 @@ import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePeopleDetails;
+import com.kmdev.flix.models.ResponsePersonMovie;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseSearchMovie;
@@ -137,6 +138,13 @@ public interface Rest {
     @GET("tv/" + "{tv_id}" + "/similar")
     Call<ResponseTvPopular> similarTvShows(@Path(BaseArguments.ARG_TV_ID) String mId,
                                            @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+
+    @GET("person/" + "{person_id}" + "/movie_credits")
+    Call<ResponsePersonMovie> personMovieCredits(@Path(BaseArguments.ARG_PERSON_ID) int id,
+                                                 @Query(BaseArguments.ARG_API_KEY) String apiKey,
+                                                 @Query(BaseArguments.ARG_LANGUAGE) String en);
+
 
 
 

@@ -11,7 +11,8 @@
             android:title="Favourites" />
         <item
             android:id="@+id/nav_people"
-            android:title="People" />
+            android:title="People"
+            android:visible="true" />
 
 
     </group>

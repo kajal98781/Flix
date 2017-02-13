@@ -88,6 +88,9 @@
     <string name="unable_load_movies">Unable to load movies.</string>
     <string name="wait_data_loaded">Please wait for a while, %s data is being loaded.</string>
     <string name="search">Search</string>
+    <string name="search_movies">Search Movies</string>
+    <string name="search_tv_shows">Search TV Shows</string>
+    <string name="search_people">Search People</string>
     <string name="retry">Retry</string>
     <string name="message_about"><b>Flix</b> is a minimalistic movie catalog application through which you can view popular as well as top rated movies.\n\nDeveloper: <b>Kajal Mittal</b>\n\nContact: <b>kajal9878@gmail.com</b>\n\nIcon made by Freepik from www.flaticon.com</string>
     <string name="message_licence">

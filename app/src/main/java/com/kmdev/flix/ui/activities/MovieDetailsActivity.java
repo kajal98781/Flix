@@ -364,7 +364,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                     }
                 }
             } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
-                DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mId));
+                DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getShowDetails(Integer.parseInt(mId));
                 ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
                 if (responseMovieReview != null) {
                     List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
@@ -509,6 +509,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
 
     @Override
     public void onSuccessResponse(int apiId, Object response) {
+        dismissLoadingDialog();
         if (apiId == ApiIds.ID_MOVIE_REVIEW) {
             mIsLoadingReview = false;
             mProgressBarReview.setVisibility(View.GONE);

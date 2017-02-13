@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -15,22 +14,31 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.brsoftech.core_utils.base.BaseAppCompatActivity;
 import com.brsoftech.core_utils.utils.ItemClickSupport;
 import com.google.gson.Gson;
 import com.kmdev.flix.R;
+import com.kmdev.flix.RestClient.ApiHitListener;
+import com.kmdev.flix.RestClient.ApiIds;
 import com.kmdev.flix.RestClient.ApiUrls;
+import com.kmdev.flix.RestClient.ConnectionDetector;
+import com.kmdev.flix.RestClient.RestClient;
+import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponsePeople;
 import com.kmdev.flix.models.ResponsePeopleDetails;
-import com.kmdev.flix.ui.adapters.PeopleAdapter;
+import com.kmdev.flix.models.ResponsePersonMovie;
+import com.kmdev.flix.ui.adapters.PersonMovieCreditAdapter;
+import com.kmdev.flix.ui.fragments.ItemListFragment;
 import com.kmdev.flix.utils.Constants;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
-public class PeopleDetailsActivity extends AppCompatActivity implements View.OnClickListener {
+public class PeopleDetailsActivity extends BaseAppCompatActivity implements View.OnClickListener, ApiHitListener {
     private Toolbar mToolbar;
     private AppBarLayout mAppBarLayout;
     private TextView mTvTitleToolbar, mTvBiography, mTvLoadingKnown, mTvTitle, mTvPopularity;
@@ -38,9 +46,12 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
     private ResponsePeople mResponsePeople;
     private ProgressBar mProgressBarKnown;
     private RecyclerView mRecyclerKnownFor;
-    private PeopleAdapter mPeopleAdapter;
+    // private PeopleAdapter mPeopleAdapter;
     private ImageView mImageBackPic;
     private String mImageUrl, mTitle;
+    private RestClient mRestClient;
+    private List<ResponsePersonMovie.CastBean> mCastBeanList;
+    private PersonMovieCreditAdapter mPersonMovieCreditAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +72,8 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
         mTvTitle = (TextView) findViewById(R.id.tv_title);
         mTvPopularity = (TextView) findViewById(R.id.tv_popularity);
         mImageBackPic = (ImageView) findViewById(R.id.imageMovieBack);
+        mProgressBarKnown = (ProgressBar) findViewById(R.id.progress_bar_known);
+        mTvLoadingKnown = (TextView) findViewById(R.id.tv_loading_known);
         mImageBackPic.setOnClickListener(this);
 
     }
@@ -71,9 +84,10 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //hide  title from toolbar
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mRestClient = new RestClient(this);
+        mCastBeanList = new ArrayList<>();
         //get parcelable data
         String peopleDetails = getIntent().getStringExtra(Constants.TYPE_PEOPLE_DETAILS);
-        String knownFor = getIntent().getStringExtra(Constants.TYPE_KNOWN_FOR);
         if (!TextUtils.isEmpty(peopleDetails)) {
             mResponsePeopleDetails = new Gson().fromJson(peopleDetails, ResponsePeopleDetails.class);
             mTvBiography.setText(mResponsePeopleDetails.getBiography());
@@ -84,15 +98,19 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
                     .into(mImageBackPic);
             mImageUrl = mResponsePeopleDetails.getProfile_path();
             mTitle = mResponsePeopleDetails.getName();
-        }
-        if (!TextUtils.isEmpty(knownFor)) {
-            mResponsePeople = new Gson().fromJson(knownFor, ResponsePeople.class);
-            List<ResponsePeople.ResultsBean> mResponsePeopleResults = mResponsePeople.getResults();
-            mPeopleAdapter = new PeopleAdapter(mResponsePeopleResults, true);
-            mRecyclerKnownFor.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, true));
-            mRecyclerKnownFor.setAdapter(mPeopleAdapter);
+            if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+                mProgressBarKnown.setVisibility(View.VISIBLE);
+                mTvLoadingKnown.setVisibility(View.VISIBLE);
+                mRestClient.callback(this)
+                        .getPeopleMovieCredits(mResponsePeopleDetails.getId());
 
+            } else {
+
+            }
         }
+        mPersonMovieCreditAdapter = new PersonMovieCreditAdapter(mCastBeanList);
+        mRecyclerKnownFor.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, true));
+        mRecyclerKnownFor.setAdapter(mPersonMovieCreditAdapter);
         mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             boolean isShow = false;
             int scrollRange = -1;
@@ -116,9 +134,20 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        callMovieDetails(position);
 
                     }
                 });
+    }
+
+    private void callMovieDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+            displayLoadingDialog(true);
+            mRestClient.callback(this).getMovieDetails(String.valueOf(mCastBeanList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
+
     }
 
     private void showToolbarContents() {
@@ -166,5 +195,51 @@ public class PeopleDetailsActivity extends AppCompatActivity implements View.OnC
                 callImageFullScreen();
                 break;
         }
+    }
+
+    @Override
+    public void onSuccessResponse(int apiId, Object response) {
+        dismissLoadingDialog();
+        mProgressBarKnown.setVisibility(View.GONE);
+        mTvLoadingKnown.setVisibility(View.GONE);
+        if (apiId == ApiIds.ID_PEOPLE_MOVIE_CREDITS) {
+            ResponsePersonMovie responsePersonMovie = (ResponsePersonMovie) response;
+            mRecyclerKnownFor.setVisibility(View.VISIBLE);
+            if (responsePersonMovie != null) {
+                List<ResponsePersonMovie.CastBean> castBeanList = responsePersonMovie.getCast();
+                mCastBeanList.clear();
+                mCastBeanList.addAll(castBeanList);
+                if (mPersonMovieCreditAdapter != null) {
+                    mPersonMovieCreditAdapter.notifyDataSetChanged();
+                }
+             /*   mPersonMovieCreditAdapter = new PersonMovieCreditAdapter(mCastBeanList);
+                mRecyclerKnownFor.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, true));
+                mRecyclerKnownFor.setAdapter(mPersonMovieCreditAdapter);
+*/
+            }
+        } else if (apiId == ApiIds.ID_MOVIE_DETAILS) {
+            ResponseMovieDetails responseMovieDetails = (ResponseMovieDetails) response;
+            String res = new Gson().toJson(responseMovieDetails);
+            if (responseMovieDetails != null) {
+
+                Intent movieDetailIntent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
+                movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_MOVIES);
+                movieDetailIntent.putExtra(Constants.TYPE_MOVIE_DETAILS, res);
+                startActivity(movieDetailIntent);
+            }
+        }
+    }
+
+    @Override
+    public void onFailResponse(int apiId, String error) {
+        mProgressBarKnown.setVisibility(View.GONE);
+        mTvLoadingKnown.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void networkNotAvailable() {
+        mTvLoadingKnown.setText(R.string.internet_connection);
+
     }
 }

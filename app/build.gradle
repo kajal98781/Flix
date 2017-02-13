@@ -8,8 +8,8 @@ android {
         applicationId "com.kajalmittal.flix"
         minSdkVersion 17
         targetSdkVersion 24
-        versionCode 9
-        versionName "0.18"
+        versionCode 11
+        versionName "0.20"
     }
     buildTypes {
         release {
