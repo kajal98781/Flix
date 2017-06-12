@@ -84,7 +84,9 @@
     <string name="title_licence">Licence</string>
     <string name="no_favourites">No Favourites available.</string>
     <string name="add_to_favourites">This movie is added successfully to your favourite movie list.</string>
+    <string name="add_to_people_favourites">This people is added successfully to your favourite people list.</string>
     <string name="remove_to_favourites">Movie is removed successfully from your wishlist.</string>
+    <string name="remove_to_people_favourites">People is removed successfully from your wishlist.</string>
     <string name="unable_load_movies">Unable to load movies.</string>
     <string name="wait_data_loaded">Please wait for a while, %s data is being loaded.</string>
     <string name="search">Search</string>
@@ -117,4 +119,10 @@
     <string name="tv_known_for">Known For</string>
     <string name="biography">Biography</string>
     <string name="similar_tv_shows">Similar TV Shows</string>
+    <string name="no_biography_available">No biography available.</string>
+    <string name="unable_load_people">Unable to load peoples.</string>
+    <string name="no_known_available">No known movies available.</string>
+    <string name="peoples">PEOPLES</string>
+    <string name="cast">Cast</string>
+    <string name="no_cast_available">No casting available.</string>
 </resources>

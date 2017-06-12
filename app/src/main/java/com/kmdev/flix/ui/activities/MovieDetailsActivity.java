@@ -31,13 +31,18 @@ import com.kmdev.flix.RestClient.ConnectionDetector;
 import com.kmdev.flix.RestClient.RestClient;
 import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.DataBaseMovieDetails;
+import com.kmdev.flix.models.ResponseCastMovies;
+import com.kmdev.flix.models.ResponseCastTVShows;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
+import com.kmdev.flix.models.ResponsePeopleDetails;
 import com.kmdev.flix.models.ResponsePopularMovie;
 import com.kmdev.flix.models.ResponseRecommendations;
 import com.kmdev.flix.models.ResponseTvDetails;
 import com.kmdev.flix.models.ResponseTvPopular;
 import com.kmdev.flix.models.ResponseVideo;
+import com.kmdev.flix.ui.adapters.CastMovieAdapter;
+import com.kmdev.flix.ui.adapters.CastShowsAdapter;
 import com.kmdev.flix.ui.adapters.ReviewMovieAdapter;
 import com.kmdev.flix.ui.adapters.SimilarMoviesAdapter;
 import com.kmdev.flix.ui.adapters.SimilarShowAdapter;
@@ -58,15 +63,18 @@ import java.util.List;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHitListener, View.OnClickListener {
+public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHitListener,
+        View.OnClickListener {
     ResponseMovieDetails mResponseMovieDetails;
     private RestClient mRestClient;
     private Toolbar mToolbar;
     private ImageView mImageMovieBack;
     private TextView mTvDescription, mTvMovieTitle, mTvReleaseDate, mTvReviews, mTvVideos;
     private RecyclerView mRecyclerViewReview, mRecyclerViewVideos, mRecyclerSimilarMovies;
+    private RecyclerView mRecyclerCast;
     private ReviewMovieAdapter mReviewAdapter;
     private VideoMovieAdapter mVideoMovieAdapter;
+    private CastMovieAdapter mCastMovieAdapter;
     private List<ResponseMovieReview.ReviewBean> mReviewBeanList;
     private List<ResponseVideo.VideoBean> mVideoBeanList;
     private String mImageUrl;
@@ -88,6 +96,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private ResponseTvDetails mResponseTvDetails;
     private ResponseRecommendations mResponseRecommendations;
     private FrameLayout mFrameReview;
+    private FrameLayout mFrameCastTVShows;
+    private FrameLayout mFrameCastMovies;
     private ResponsePopularMovie mResponseSimilarMovies;
     private ResponseTvPopular mResponseSimilarShows;
     private List<ResponsePopularMovie.PopularMovie> mSimilarMoviesList;
@@ -95,6 +105,19 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
     private SimilarShowAdapter mSimilarShowAdapter;
     private List<ResponseTvPopular.ResultsBean> mSimilarShowsList;
     private TextView mTvSimilarTxt;
+    private TextView mTvNoCast;
+    private TextView mTvLoadingCast;
+    private ProgressBar mProgressCast;
+    private boolean mIsLoadingCasting;
+    private List<ResponseCastMovies.CastBean> mMovieCastList;
+    private TextView mTvLoadingCastTVShows;
+    private RecyclerView mRecyclerCastShows;
+    private ProgressBar mProgressCastShows;
+    private CastShowsAdapter mCastShowsAdapter;
+    private ArrayList<ResponseCastTVShows.CastBean> mShowCastList;
+    private boolean mIsLoadingCastingShows;
+    private ResponseCastTVShows mResponseCastShows;
+    private ResponseCastMovies mResponseCastMovies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +125,6 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         setContentView(R.layout.activity_movie_details);
         bindViewsById();
         init(savedInstanceState);
-
-
     }
 
     @Override
@@ -140,6 +161,15 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mFrameReview = (FrameLayout) findViewById(R.id.frame_review);
         mTvRating = (TextView) findViewById(R.id.tv_rating);
         mTvSimilarTxt = (TextView) findViewById(R.id.tv_similar);
+        mRecyclerCast = (RecyclerView) findViewById(R.id.recycler_cast);
+        mRecyclerCastShows = (RecyclerView) findViewById(R.id.recycler_cast_shows);
+        mTvNoCast = (TextView) findViewById(R.id.tv_no_cast);
+        mTvLoadingCast = (TextView) findViewById(R.id.tv_loading_cast);
+        mTvLoadingCastTVShows = (TextView) findViewById(R.id.tv_loading_cast_shows);
+        mProgressCast = (ProgressBar) findViewById(R.id.progress_bar_cast);
+        mProgressCastShows = (ProgressBar) findViewById(R.id.progress_bar_cast_shows);
+        mFrameCastMovies = (FrameLayout) findViewById(R.id.frame_cast);
+        mFrameCastTVShows = (FrameLayout) findViewById(R.id.frame_cast_tvshows);
     }
 
     private void init(Bundle savedInstanceState) {
@@ -148,6 +178,8 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mDatabase = new DataBaseHelper(this);
         mVideoBeanList = new ArrayList<>();
         mSimilarMoviesList = new ArrayList<>();
+        mMovieCastList = new ArrayList<>();
+        mShowCastList = new ArrayList<>();
         mImageMovieBack.setOnClickListener(this);
         mFabFavourite.setOnClickListener(this);
         setSupportActionBar(mToolbar);
@@ -165,6 +197,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             mTvReview.setVisibility(View.GONE);
             mTvSimilarTxt.setText(getString(R.string.similar_tv_shows));
             mRecyclerViewReview.setVisibility(View.GONE);
+            mRecyclerCast.setVisibility(View.GONE);
             //  mRecyclerSimilarMovies.setVisibility(View.GONE);
             mFrameReview.setVisibility(View.GONE);
         }
@@ -174,6 +207,17 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         mReviewAdapter = new ReviewMovieAdapter(mReviewBeanList);
         mRecyclerViewReview.setAdapter(mReviewAdapter);
         mRecyclerViewReview.setNestedScrollingEnabled(false);
+
+        //set movie cast adapter
+        mRecyclerCast.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mCastMovieAdapter = new CastMovieAdapter(mMovieCastList);
+        mRecyclerCast.setAdapter(mCastMovieAdapter);
+        mRecyclerCast.setNestedScrollingEnabled(false);
+
+        mRecyclerCastShows.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mCastShowsAdapter = new CastShowsAdapter(mShowCastList);
+        mRecyclerCastShows.setAdapter(mCastShowsAdapter);
+        mRecyclerCastShows.setNestedScrollingEnabled(false);
 
         //set similar movies adapter
         if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
@@ -282,6 +326,25 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                         }
                     }
                 });
+        //set cast adpter
+        ItemClickSupport.addTo(mRecyclerCast)
+                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        callPeopleDetails(position);
+
+                    }
+                });
+
+        //set cast adpter
+        ItemClickSupport.addTo(mRecyclerCastShows)
+                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        callPeopleDetailsShows(position);
+
+                    }
+                });
         //similar movie listener
         ItemClickSupport.addTo(mRecyclerViewVideos)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -320,6 +383,20 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
                 DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getMovieDetails(Integer.parseInt(mId));
                 ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
+                ResponseCastMovies responseCastMovies = dataBaseMovieDetails.getResponseCastMovies();
+                if (responseCastMovies != null) {
+                    List<ResponseCastMovies.CastBean> castMoviesList = responseCastMovies.getCast();
+                    if (castMoviesList.size() > 0) {
+                        mMovieCastList.clear();
+                        mMovieCastList.addAll(castMoviesList);
+                        if (mCastMovieAdapter != null) {
+                            mCastMovieAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mRecyclerCast.setVisibility(View.GONE);
+                        mTvNoCast.setVisibility(View.VISIBLE);
+                    }
+                }
                 if (responseMovieReview != null) {
                     List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
                     if (reviewBeanList.size() > 0) {
@@ -366,6 +443,20 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
                 DataBaseMovieDetails dataBaseMovieDetails = mDatabase.getShowDetails(Integer.parseInt(mId));
                 ResponseMovieReview responseMovieReview = dataBaseMovieDetails.getResponseMovieReview();
+                ResponseCastTVShows responseCastTVShows = dataBaseMovieDetails.getResponseCastShows();
+                if (responseCastTVShows != null) {
+                    List<ResponseCastTVShows.CastBean> castShowsList = responseCastTVShows.getCast();
+                    if (castShowsList.size() > 0) {
+                        mShowCastList.clear();
+                        mShowCastList.addAll(castShowsList);
+                        if (mCastShowsAdapter != null) {
+                            mCastShowsAdapter.notifyDataSetChanged();
+                        }
+                    } else {
+                        mTvNoCast.setVisibility(View.VISIBLE);
+                        mRecyclerCastShows.setVisibility(View.GONE);
+                    }
+                }
                 if (responseMovieReview != null) {
                     List<ResponseMovieReview.ReviewBean> reviewBeanList = responseMovieReview.getReviewBean();
                     if (reviewBeanList.size() > 0) {
@@ -419,6 +510,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 mIsLoadingReview = true;
                 mIsLoadingTrailers = true;
                 mIsLoadingSimilarMovies = true;
+                mIsLoadingCasting = true;
                 mProgressBarReview.setVisibility(View.VISIBLE);
                 mTvLoadReview.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getReviews(mId);
@@ -429,12 +521,17 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 mProgressBarSimilarMovies.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getSimilarMovies(mId);
 
+                mTvLoadingCast.setVisibility(View.VISIBLE);
+                mProgressCast.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getCastingOfMovies(mId);
+
             }
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
             if (!TextUtils.isEmpty(mId)) {
                 mIsLoadingReview = true;
                 mIsLoadingSimilarMovies = true;
                 mIsLoadingTrailers = true;
+                mIsLoadingCastingShows = true;
                 mProgressBarReview.setVisibility(View.VISIBLE);
                 mTvLoadReview.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getTvReviews(mId);
@@ -444,8 +541,21 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 mTvLoadingSimilarMovies.setVisibility(View.VISIBLE);
                 mProgressBarSimilarMovies.setVisibility(View.VISIBLE);
                 mRestClient.callback(this).getSimilarTvShows(mId);
+                mTvLoadingCastTVShows.setVisibility(View.VISIBLE);
+                mProgressCastShows.setVisibility(View.VISIBLE);
+                mRestClient.callback(this).getCastingOfTvShows(mId);
 
             }
+        }
+    }
+
+    private void callPeopleDetailsShows(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+            displayLoadingDialog(false);
+            mRestClient.callback(this)
+                    .getPeopleDetails(String.valueOf(mShowCastList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
         }
     }
 
@@ -461,6 +571,16 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
         }
 
 
+    }
+
+    private void callPeopleDetails(int position) {
+        if (ConnectionDetector.isNetworkAvailable(getApplicationContext())) {
+            displayLoadingDialog(false);
+            mRestClient.callback(this)
+                    .getPeopleDetails(String.valueOf(mMovieCastList.get(position).getId()));
+        } else {
+            displayShortToast(R.string.internet_connection);
+        }
     }
 
     private void callTvShowDetails(int position) {
@@ -640,6 +760,48 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
                 movieDetailIntent.putExtra(Constants.TYPE_TV_SHOW_DETAILS, res);
                 startActivity(movieDetailIntent);
             }
+        } else if (apiId == ApiIds.ID_MOVIE_CREDITS) {
+            mTvLoadingCast.setVisibility(View.GONE);
+            mProgressCast.setVisibility(View.GONE);
+            mRecyclerCast.setVisibility(View.VISIBLE);
+            mResponseCastMovies = (ResponseCastMovies) response;
+            if (mResponseCastMovies != null) {
+                mIsLoadingCasting = false;
+                List<ResponseCastMovies.CastBean> castList = mResponseCastMovies.getCast();
+                mMovieCastList.clear();
+                mMovieCastList.addAll(castList);
+                if (mCastMovieAdapter != null) {
+                    mCastMovieAdapter.notifyDataSetChanged();
+                }
+
+            }
+        } else if (apiId == ApiIds.ID_TV_SHOWS_CREDITS) {
+            mTvLoadingCastTVShows.setVisibility(View.GONE);
+            mProgressCastShows.setVisibility(View.GONE);
+            mRecyclerCastShows.setVisibility(View.VISIBLE);
+            mResponseCastShows = (ResponseCastTVShows) response;
+            if (mResponseCastShows != null) {
+                mIsLoadingCastingShows = false;
+                List<ResponseCastTVShows.CastBean> castList = mResponseCastShows.getCast();
+                mShowCastList.clear();
+                mShowCastList.addAll(castList);
+                if (mCastShowsAdapter != null) {
+                    mCastShowsAdapter.notifyDataSetChanged();
+                }
+
+            }
+        } else if (apiId == ApiIds.ID_PEOPLE_DETAILS) {
+            ResponsePeopleDetails responsePeopleDetails = (ResponsePeopleDetails) response;
+            String res = new Gson().toJson(responsePeopleDetails);
+            // String resKnown = new Gson().toJson(mResponsePeople);
+            if (responsePeopleDetails != null) {
+
+                Intent peopleDetailIntent = new Intent(getApplicationContext(), PeopleDetailsActivity.class);
+                peopleDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
+                peopleDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_PEOPLE);
+                startActivity(peopleDetailIntent);
+            }
+
         }
 
 
@@ -740,6 +902,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
             dataBaseMovieDetails.setId(mResponseMovieDetails.getId());
             dataBaseMovieDetails.setResponseSimilarMovies(mResponseSimilarMovies);
+            dataBaseMovieDetails.setResponseCastMovies(mResponseCastMovies);
             mDatabase.addMovies(dataBaseMovieDetails);
 
         } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
@@ -750,7 +913,7 @@ public class MovieDetailsActivity extends BaseAppCompatActivity implements ApiHi
             dataBaseMovieDetails.setResponseMovieVideo(mResponseMovieVideo);
             dataBaseMovieDetails.setResponseTvSimilarShows(mResponseSimilarShows);
             dataBaseMovieDetails.setId(mResponseTvDetails.getId());
-
+            dataBaseMovieDetails.setResponseCastShows(mResponseCastShows);
             mDatabase.addMovies(dataBaseMovieDetails);
         }
     }

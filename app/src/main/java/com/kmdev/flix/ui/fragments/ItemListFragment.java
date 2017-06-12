@@ -50,6 +50,7 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
     public static final String ARG_TV_SHOWS = "tv_shows";
     public static final String ARG_TYPE = "type";
     public static final String ARG_PEOPLE = "people";
+    private static final String TAG = "ItemListFragment";
     private RestClient mRestClient;
     private RecyclerView mRecyclerPopularMovie;
     private HomeMoviesAdapter mHomeMoviesAdapter;
@@ -66,6 +67,7 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
     private FrameLayout mFrameNetworkError;
     private SelectedMenu mCurrentState = SelectedMenu.IDLE;
     private boolean mIsClearDataSet = false;
+
 
 
     public static ItemListFragment newInstance(String type) {
@@ -429,6 +431,7 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
         } else {
             inflater.inflate(R.menu.tv_shows_menu, menu);
         }
+
         super.onCreateOptionsMenu(menu, inflater);
 
     }
@@ -572,11 +575,14 @@ public class ItemListFragment extends BaseSupportFragment implements ApiHitListe
             case R.id.action_search:
                 Intent movieIntent = new Intent(getActivity(), SearchMovieActivity.class);
                 movieIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_MOVIES);
+                Log.e(TAG, "onOptionsItemSelected: " + getArguments().getString(ItemListFragment.ARG_TYPE));
                 startActivity(movieIntent);
                 break;
             case R.id.action_tv_search:
                 Intent tvIntent = new Intent(getActivity(), SearchMovieActivity.class);
                 tvIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_TV_SHOWS);
+                Log.e(TAG, "onOptionsItemSelected: " + getArguments().getString(ItemListFragment.ARG_TYPE));
+
                 startActivity(tvIntent);
                 break;
 

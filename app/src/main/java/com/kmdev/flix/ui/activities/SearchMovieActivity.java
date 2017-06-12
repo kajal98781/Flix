@@ -385,8 +385,12 @@ public class SearchMovieActivity extends BaseAppCompatActivity implements ApiHit
         if (apiId == ApiIds.ID_SEARCH_MOVIE && apiId == ApiIds.ID_MOVIE_DETAILS) {
             mTvError.setText(R.string.unable_load_movies);
             mTvError.setVisibility(View.VISIBLE);
-        } else {
+        } else if (apiId == ApiIds.ID_SEARCH_TV_SHOWS && apiId == ApiIds.ID_TV_DETAILS) {
             mTvError.setText(R.string.unable_load_tv);
+            mTvError.setVisibility(View.VISIBLE);
+
+        } else if (apiId == ApiIds.ID_SEARCH_PEOPLE && apiId == ApiIds.ID_PEOPLE_DETAILS) {
+            mTvError.setText(R.string.unable_load_people);
             mTvError.setVisibility(View.VISIBLE);
 
         }

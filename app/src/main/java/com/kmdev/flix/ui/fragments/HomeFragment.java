@@ -32,7 +32,6 @@ public class HomeFragment extends BaseSupportFragment implements TabLayout.OnTab
     public static HomeFragment newInstance() {
 
         Bundle args = new Bundle();
-
         HomeFragment fragment = new HomeFragment();
         fragment.setArguments(args);
         return fragment;
@@ -73,7 +72,7 @@ public class HomeFragment extends BaseSupportFragment implements TabLayout.OnTab
         mListFragments.add(tvShowsFragment);
         // mListFragments.add(favouriteMovieFragment);
         final HomeAdapter adapter = new HomeAdapter
-                (getActivity().getSupportFragmentManager(), mListFragments, mTitleList);
+                (getChildFragmentManager(), mListFragments, mTitleList);
         mViewPager.setAdapter(adapter);
         mTabLayout.setupWithViewPager(mViewPager);
         Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Montserrat-Bold.ttf");

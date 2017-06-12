@@ -17,9 +17,12 @@ import com.google.gson.Gson;
 import com.kmdev.flix.R;
 import com.kmdev.flix.models.DataBaseEventUpdateModel;
 import com.kmdev.flix.models.ResponseMovieDetails;
+import com.kmdev.flix.models.ResponsePeopleDetails;
 import com.kmdev.flix.models.ResponseTvDetails;
 import com.kmdev.flix.ui.activities.MovieDetailsActivity;
+import com.kmdev.flix.ui.activities.PeopleDetailsActivity;
 import com.kmdev.flix.ui.adapters.FavouriteMovieAdapter;
+import com.kmdev.flix.ui.adapters.FavouritePeopleAdapter;
 import com.kmdev.flix.ui.adapters.FavouriteTvAdapter;
 import com.kmdev.flix.utils.Constants;
 import com.kmdev.flix.utils.DataBaseHelper;
@@ -38,15 +41,18 @@ import java.util.List;
 public class FavouriteFragment extends BaseSupportFragment {
     public static final String ARG_MOVIES = "movies";
     public static final String ARG_TV_SHOWS = "tv_shows";
+    public static final String ARG_PEOPLES = "people";
     private static final String ARG_TYPE = "type";
     private static String mType;
     private RecyclerView mRecyclerViewFav;
     private List<ResponseMovieDetails> mMovieDetailsList;
     private List<ResponseTvDetails> mResponseTvDetailsList;
+    private List<ResponsePeopleDetails> mResponsePeopleDetailsList;
     private FavouriteMovieAdapter mFavouriteMovieAdapter;
     private FavouriteTvAdapter mFavouriteTvAdapter;
     private TextView mTvNoFavAvail, mTvNoInternet;
     private DataBaseHelper mDataBase;
+    private FavouritePeopleAdapter mFavouritePeopleAdapter;
 
     public static FavouriteFragment newInstance(String type) {
 
@@ -77,6 +83,7 @@ public class FavouriteFragment extends BaseSupportFragment {
     private void init() {
         mMovieDetailsList = new ArrayList<>();
         mResponseTvDetailsList = new ArrayList<>();
+        mResponsePeopleDetailsList = new ArrayList<>();
 
         mDataBase = new DataBaseHelper(getActivity());
 
@@ -86,12 +93,47 @@ public class FavouriteFragment extends BaseSupportFragment {
         mRecyclerViewFav.addItemDecoration(itemDecoration);
         if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_MOVIES)) {
             callToGetFavouriteMovies();
-        } else {
+        } else if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_TV_SHOWS)) {
             callToGetFavouriteTvShows();
+        } else if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_PEOPLES)) {
+            callToGetFavouritePeoples();
         }
 
 
     }
+
+    private void callToGetFavouritePeoples() {
+        //initialize database & get movies
+        List<ResponsePeopleDetails> responsePeopleDetailsList = mDataBase.getAllPeoples();
+        mFavouritePeopleAdapter = new FavouritePeopleAdapter(responsePeopleDetailsList);
+        mRecyclerViewFav.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        mRecyclerViewFav.setAdapter(mFavouritePeopleAdapter);
+
+        if (responsePeopleDetailsList.size() > 0) {
+            mResponsePeopleDetailsList.clear();
+            mTvNoFavAvail.setVisibility(View.GONE);
+            mResponsePeopleDetailsList.addAll(responsePeopleDetailsList);
+            if (mFavouritePeopleAdapter != null) {
+                mFavouritePeopleAdapter.notifyDataSetChanged();
+            }
+        } else {
+            mResponsePeopleDetailsList.clear();
+            if (mFavouritePeopleAdapter != null) {
+                mFavouritePeopleAdapter.notifyDataSetChanged();
+            }
+            mTvNoFavAvail.setVisibility(View.VISIBLE);
+
+        }
+        ItemClickSupport.addTo(mRecyclerViewFav)
+                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        mType = ItemListFragment.ARG_PEOPLE;
+                        callMovieDetails(position);
+                    }
+                });
+    }
+
 
     private void callToGetFavouriteTvShows() {
         //initialize database & get movies
@@ -144,8 +186,10 @@ public class FavouriteFragment extends BaseSupportFragment {
     public void onDatabaseUpdateEvent(DataBaseEventUpdateModel dataBaseEventUpdateModel) {
         if (TextUtils.equals(mType, ItemListFragment.ARG_MOVIES)) {
             callToGetFavouriteMovies();
-        } else {
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_TV_SHOWS)) {
             callToGetFavouriteTvShows();
+        } else if (TextUtils.equals(getArguments().getString(ARG_TYPE), ARG_PEOPLES)) {
+            callToGetFavouritePeoples();
         }
     }
 
@@ -209,6 +253,19 @@ public class FavouriteFragment extends BaseSupportFragment {
                 startActivity(movieDetailIntent);
             }
 
+        } else if (TextUtils.equals(mType, ItemListFragment.ARG_PEOPLE)) {
+            ResponsePeopleDetails responsePeopleDetails = mResponsePeopleDetailsList.get(position);
+            displayLoadingDialog(false);
+            String res = new Gson().toJson(responsePeopleDetails);
+            if (res != null) {
+                dismissLoadingDialog();
+                Intent movieDetailIntent = new Intent(getActivity(), PeopleDetailsActivity.class);
+                movieDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
+                movieDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_PEOPLE);
+                movieDetailIntent.putExtra(Constants.TYPE_IS_FAVOURITE, true);
+                startActivity(movieDetailIntent);
+
+            }
         }
     }
 

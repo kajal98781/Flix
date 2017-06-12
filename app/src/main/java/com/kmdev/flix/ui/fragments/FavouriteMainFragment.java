@@ -74,16 +74,20 @@ public class FavouriteMainFragment extends BaseSupportFragment implements View.O
     private void tabSelection() {
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.movies));
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.tv_shows));
+        mTabLayout.addTab(mTabLayout.newTab().setText(R.string.peoples));
 
         mTitleList.add(getResources().getString(R.string.movies));
         mTitleList.add(getResources().getString(R.string.tv_shows));
+        mTitleList.add(getResources().getString(R.string.peoples));
 
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         FavouriteFragment moviesFragment = FavouriteFragment.newInstance(FavouriteFragment.ARG_MOVIES);
         FavouriteFragment tvShowsFragment = FavouriteFragment.newInstance(FavouriteFragment.ARG_TV_SHOWS);
+        FavouriteFragment peoplesFragment = FavouriteFragment.newInstance(FavouriteFragment.ARG_PEOPLES);
 
         mListFragments.add(moviesFragment);
         mListFragments.add(tvShowsFragment);
+        mListFragments.add(peoplesFragment);
         // mListFragments.add(favouriteMovieFragment);
         final HomeAdapter adapter = new HomeAdapter
                 (getChildFragmentManager(), mListFragments, mTitleList);

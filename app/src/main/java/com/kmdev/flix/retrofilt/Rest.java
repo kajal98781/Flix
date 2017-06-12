@@ -1,5 +1,7 @@
 package com.kmdev.flix.retrofilt;
 
+import com.kmdev.flix.models.ResponseCastMovies;
+import com.kmdev.flix.models.ResponseCastTVShows;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
@@ -144,6 +146,16 @@ public interface Rest {
     Call<ResponsePersonMovie> personMovieCredits(@Path(BaseArguments.ARG_PERSON_ID) int id,
                                                  @Query(BaseArguments.ARG_API_KEY) String apiKey,
                                                  @Query(BaseArguments.ARG_LANGUAGE) String en);
+
+    @GET("movie/" + "{movie_id}" + "/credits")
+    Call<ResponseCastMovies> getMovieCasting(@Path(BaseArguments.ARG_MOVIE_ID) String mId,
+                                             @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+    @GET("tv/" + "{tv_id}" + "/credits")
+    Call<ResponseCastTVShows> getShowsCasting(@Path(BaseArguments.ARG_TV_ID) String mId,
+                                              @Query(BaseArguments.ARG_API_KEY) String apiKey);
+
+
 
 
 

@@ -2,6 +2,8 @@ package com.kmdev.flix.RestClient;
 
 import android.content.Context;
 
+import com.kmdev.flix.models.ResponseCastMovies;
+import com.kmdev.flix.models.ResponseCastTVShows;
 import com.kmdev.flix.models.ResponseMovieDetails;
 import com.kmdev.flix.models.ResponseMovieReview;
 import com.kmdev.flix.models.ResponsePeople;
@@ -511,5 +513,43 @@ public class RestClient extends BaseRestClient {
             apiHitListener.networkNotAvailable();
         }
 
+    }
+
+    public void getCastingOfMovies(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseCastMovies> call = getApi().getMovieCasting(mId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponseCastMovies>() {
+                @Override
+                public void onResponse(Call<ResponseCastMovies> call, Response<ResponseCastMovies> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_MOVIE_CREDITS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseCastMovies> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_MOVIE_CREDITS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
+    }
+
+    public void getCastingOfTvShows(String mId) {
+        if (ConnectionDetector.isNetworkAvailable(_context)) {
+            Call<ResponseCastTVShows> call = getApi().getShowsCasting(mId, Constants.API_KEY);
+            call.enqueue(new Callback<ResponseCastTVShows>() {
+                @Override
+                public void onResponse(Call<ResponseCastTVShows> call, Response<ResponseCastTVShows> response) {
+                    apiHitListener.onSuccessResponse(ApiIds.ID_TV_SHOWS_CREDITS, response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ResponseCastTVShows> call, Throwable t) {
+                    apiHitListener.onFailResponse(ApiIds.ID_TV_SHOWS_CREDITS, t.getMessage());
+                }
+            });
+        } else {
+            apiHitListener.networkNotAvailable();
+        }
     }
 }

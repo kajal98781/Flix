@@ -8,10 +8,47 @@ public class DataBaseMovieDetails {
     private ResponseMovieReview responseMovieReview;
     private ResponseVideo responseMovieVideo;
     private ResponseTvDetails responseTvDetails;
+    private ResponsePeopleDetails responsePeopleDetails;
     private int type;
     private int id;
     private ResponsePopularMovie responseSimilarMovies;
     private ResponseTvPopular responseTvSimilarShows;
+    private ResponsePersonMovie responsePersonMovie;
+    private ResponseCastTVShows responseCastShows;
+    private ResponseCastMovies responseCastMovies;
+
+    public ResponseCastTVShows getResponseCastShows() {
+        return responseCastShows;
+    }
+
+    public void setResponseCastShows(ResponseCastTVShows responseCastShows) {
+        this.responseCastShows = responseCastShows;
+    }
+
+    public ResponseCastMovies getResponseCastMovies() {
+        return responseCastMovies;
+    }
+
+    public void setResponseCastMovies(ResponseCastMovies responseCastMovies) {
+        this.responseCastMovies = responseCastMovies;
+    }
+
+
+    public ResponsePersonMovie getResponsePersonMovie() {
+        return responsePersonMovie;
+    }
+
+    public void setResponsePersonMovie(ResponsePersonMovie responsePersonMovie) {
+        this.responsePersonMovie = responsePersonMovie;
+    }
+
+    public ResponsePeopleDetails getResponsePeopleDetails() {
+        return responsePeopleDetails;
+    }
+
+    public void setResponsePeopleDetails(ResponsePeopleDetails responsePeopleDetails) {
+        this.responsePeopleDetails = responsePeopleDetails;
+    }
 
     public ResponseTvPopular getResponseTvSimilarShows() {
         return responseTvSimilarShows;

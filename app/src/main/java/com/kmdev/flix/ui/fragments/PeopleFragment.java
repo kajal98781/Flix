@@ -3,6 +3,7 @@ package com.kmdev.flix.ui.fragments;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
@@ -38,7 +39,7 @@ import java.util.List;
 /**
  * Created by Kajal on 1/22/2017.
  */
-public class PeopleFragment extends BaseSupportFragment implements ApiHitListener, PeopleAdapter.OnRetryListener {
+public class PeopleFragment extends BaseSupportFragment implements ApiHitListener, PeopleAdapter.OnRetryListener, SwipeRefreshLayout.OnRefreshListener {
     private RestClient mRestClient;
     private RecyclerView mRecyclerViewPeople;
     private PeopleAdapter mPeopleAdapter;
@@ -53,6 +54,7 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     private ResponsePeople mResponsePeople;
     private int mPastVisibleItems, mVisibleItemCount, mTotalItemCount;
     private boolean mIsLoadingNewItems = false;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public static PeopleFragment newInstance() {
 
@@ -75,7 +77,7 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
         View view = inflater.inflate(R.layout.fragmnet_people, container, false);
         bindViewsById(view);
         init();
-        callToGetPopularPeople();
+
         return view;
     }
 
@@ -87,13 +89,27 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
         //mProgressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
         mTvLoading = (TextView) view.findViewById(R.id.tv_loading);
         mTvErrorShow = (TextView) view.findViewById(R.id.tv_error_show);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
 
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mProgressBar.setVisibility(View.VISIBLE);
+        mTvLoading.setVisibility(View.VISIBLE);
+        callToGetPopularPeople();
     }
 
     private void init() {
         mPopularPeopleList = new ArrayList<>();
         mKnowPeopleList = new ArrayList<>();
         mRestClient = new RestClient(getActivity());
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.black,
+                R.color.colorPrimary,
+                R.color.colorAccent);
+
         mRecyclerViewPeople.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         mPeopleAdapter = new PeopleAdapter(mPopularPeopleList, false);
         mRecyclerViewPeople.setAdapter(mPeopleAdapter);
@@ -171,8 +187,19 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     }
 
     private void callToGetPopularPeople() {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mTvLoading.setVisibility(View.VISIBLE);
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            if (mCurrentPage == 1) {
+                mIsLoadingNewItems = false;
+            } else {
+                if (!mIsLoadingNewItems) {
+                    mIsLoadingNewItems = true;
+                    getPopularPeoples();
+                }
+            }
+        }
+    }
+
+    private void getPopularPeoples() {
         mRestClient.callback(this).getPopularPeople(mCurrentPage);
     }
 
@@ -196,6 +223,7 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
 
     @Override
     public void onSuccessResponse(int apiId, Object response) {
+        mSwipeRefreshLayout.setRefreshing(false);
         mProgressBar.setVisibility(View.GONE);
         mTvLoading.setVisibility(View.GONE);
         dismissLoadingDialog();
@@ -226,6 +254,7 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
 
                 Intent peopleDetailIntent = new Intent(getActivity(), PeopleDetailsActivity.class);
                 peopleDetailIntent.putExtra(Constants.TYPE_PEOPLE_DETAILS, res);
+                peopleDetailIntent.putExtra(ItemListFragment.ARG_TYPE, ItemListFragment.ARG_PEOPLE);
                 startActivity(peopleDetailIntent);
             }
 
@@ -236,6 +265,7 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     @Override
     public void onFailResponse(int apiId, String error) {
         dismissLoadingDialog();
+        mSwipeRefreshLayout.setRefreshing(false);
         displayErrorDialog(R.string.error, R.string.internet_connection);
 
     }
@@ -243,12 +273,25 @@ public class PeopleFragment extends BaseSupportFragment implements ApiHitListene
     @Override
     public void networkNotAvailable() {
         mTvNoInernet.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.GONE);
+        mTvLoading.setVisibility(View.GONE);
 
     }
 
     @Override
     public void onRetry() {
         onScrollLoadMovies();
+
+    }
+
+    @Override
+    public void onRefresh() {
+        if (ConnectionDetector.isNetworkAvailable(getActivity())) {
+            callToGetPopularPeople();
+        } else {
+            displayShortToast(R.string.internet_connection);
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
 
     }
 }

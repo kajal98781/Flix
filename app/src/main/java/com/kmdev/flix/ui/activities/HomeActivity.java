@@ -18,9 +18,12 @@ import com.kmdev.flix.ui.fragments.HomeFragment;
 import com.kmdev.flix.ui.fragments.PeopleFragment;
 import com.kmdev.flix.utils.Utils;
 
+import java.util.ArrayList;
+
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class HomeActivity extends BaseAppCompatActivity implements ApiHitListener, NavigationView.OnNavigationItemSelectedListener {
+public class HomeActivity extends BaseAppCompatActivity implements ApiHitListener,
+        NavigationView.OnNavigationItemSelectedListener {
     private Toolbar mToolBar;
 
     @Override
@@ -31,8 +34,6 @@ public class HomeActivity extends BaseAppCompatActivity implements ApiHitListene
         setNavigationDrawer();
         setTitle();
         setFragmentWithoutBackStack(R.id.home_fragment, HomeFragment.newInstance(), false);
-
-
     }
 
 
@@ -113,6 +114,13 @@ public class HomeActivity extends BaseAppCompatActivity implements ApiHitListene
 
         } else if (id == R.id.nav_donate) {
 
+            ArrayList<String> skuList = new ArrayList<String>();
+            skuList.add("premiumUpgrade");
+            skuList.add("gas");
+            Bundle querySkus = new Bundle();
+            querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
+
+
         } else if (id == R.id.nav_people) {
             setFragmentWithoutBackStack(R.id.home_fragment, PeopleFragment.newInstance(), false);
         }
@@ -121,4 +129,6 @@ public class HomeActivity extends BaseAppCompatActivity implements ApiHitListene
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }

@@ -27,8 +27,10 @@ public class ApiIds {
     public static final int ID_PEOPLE_DETAILS = 22;
     public static final int ID_SIMILAR_MOVIES = 23;
     public static final int ID_SIMILAR_TV_SHOWS = 24;
+    public static final int ID_MOVIE_CREDITS = 26;
+    public static final int ID_TV_SHOWS_CREDITS = 27;
     public static int ID_TOP_RATED_MOVIES = 2;
-
-
     public static int ID_PEOPLE_MOVIE_CREDITS = 25;
+
+
 }

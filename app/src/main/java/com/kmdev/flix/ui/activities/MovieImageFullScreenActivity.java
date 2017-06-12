@@ -1,24 +1,27 @@
 package com.kmdev.flix.ui.activities;
 
+import android.Manifest;
 import android.app.DownloadManager;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.brsoftech.core_utils.base.BaseAppCompatActivity;
 import com.kmdev.flix.R;
 import com.kmdev.flix.RestClient.ApiUrls;
 import com.kmdev.flix.utils.Constants;
+import com.kmdev.flix.utils.Utils;
 import com.squareup.picasso.Picasso;
 
 /**
  * Created by Kajal on 10/16/2016.
  */
 public class MovieImageFullScreenActivity extends BaseAppCompatActivity implements View.OnClickListener {
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1337;
     private String mImageUrl, mTitle;
     private ImageView mImageFullScreenView, mImageViewCross, mImageViewDownload;
     private TextView mTvTitle, mTvDate;
@@ -48,12 +51,15 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
         mImageViewCross = (ImageView) findViewById(R.id.img_cross);
         mImageViewDownload = (ImageView) findViewById(R.id.img_download);
         mImageViewCross.setOnClickListener(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) ==
+                PackageManager.PERMISSION_GRANTED) {
+            //  txtPermissionStatus.setText(R.string.permission_granted);
+        }
         mImageViewDownload.setOnClickListener(this);
     }
 
     private void init() {
         if (!TextUtils.isEmpty(mImageUrl)) {
-
             Picasso.with(this)
                     .load(ApiUrls.IMAGE_PATH_ULTRA + mImageUrl)
                     .into(mImageFullScreenView);
@@ -75,38 +81,28 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
     }
 
     private void callToDownLoadAndSaveImage() {
-/*
 // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
+            // No explanation needed, we can request the permission.
 
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-                Utils.downloadFile(MovieImageFullScreenActivity.this,
-                        ApiUrls.IMAGE_PATH_ORIGINAL + mImageUrl,
-                        mTitle,
-                        "Download Image...");
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
+            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        } else {
+            //   Toast.makeText(MovieImageFullScreenActivity.this, R.string.pe, Toast.LENGTH_SHORT).show();
+            Utils.downloadFile(MovieImageFullScreenActivity.this,
+                    ApiUrls.IMAGE_PATH_ORIGINAL + mImageUrl,
+                    mTitle,
+                    "Download Image...");
         }
 
-*/
+
 
       /*  if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
@@ -123,13 +119,36 @@ public class MovieImageFullScreenActivity extends BaseAppCompatActivity implemen
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // Permission Granted
-            callToDownLoadAndSaveImage();
-        } else {
-            // Permission Denied
-            Toast.makeText(MovieImageFullScreenActivity.this, "WRITE_CONTACTS Denied", Toast.LENGTH_SHORT)
-                    .show();
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission was granted, yay!
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    Utils.downloadFile(MovieImageFullScreenActivity.this,
+                            ApiUrls.IMAGE_PATH_ORIGINAL + mImageUrl,
+                            mTitle,
+                            "Download Image...");
+                } else {
+                    // Permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+/*
+                    Toast.makeText(getApplicationContext(), R.string.permission_denied, Toast.LENGTH_SHORT).show();
+                    txtPermissionStatus.setText(R.string.permission_denied);
+*/
+                }
+                return;
+            }
         }
     }
 }

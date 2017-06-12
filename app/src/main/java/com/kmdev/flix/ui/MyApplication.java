@@ -2,6 +2,7 @@ package com.kmdev.flix.ui;
 
 import android.app.Application;
 
+import com.facebook.stetho.Stetho;
 import com.kmdev.flix.R;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -18,10 +19,15 @@ public class MyApplication extends Application {
                 .setFontAttrId(R.attr.fontPath)
                 .build()
         );
+
+        Stetho.initialize(
+                Stetho.newInitializerBuilder(this)
+                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                        .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
+                        .build());
+
+
     }
 
-    /*@Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
-    }*/
+
 }
