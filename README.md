@@ -15,3 +15,5 @@ Flix is powered by themoviedb.org and provides multiple features like:
 
 
 ![image](https://user-images.githubusercontent.com/23611258/40719315-e00c3690-6430-11e8-96ae-48253edff123.jpg)
+![unnamed](https://user-images.githubusercontent.com/23611258/40719365-0c7a3d26-6431-11e8-9715-f9b5afa4d2b2.jpg)
+
