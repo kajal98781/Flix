@@ -14,4 +14,4 @@ Flix is powered by themoviedb.org and provides multiple features like:
 * Read movie/tv shows reviews and watch its trailers.
 
 
-![yellow](https://user-images.githubusercontent.com/23611258/40719128-0df7b648-6430-11e8-8b1f-b17457d4eab7.jpg)
+![image](https://user-images.githubusercontent.com/23611258/40719315-e00c3690-6430-11e8-96ae-48253edff123.jpg)
